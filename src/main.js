@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
+import router from './router'
 
 // Quasar styles (must be imported first)
 import 'quasar/src/css/index.sass'
@@ -9,12 +11,13 @@ import '@quasar/extras/material-icons/material-icons.css'
 import './assets/main.css'
 
 // Quasar
-import { Quasar } from 'quasar'
+import { Quasar, Notify } from 'quasar'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 app.use(Quasar, {
-  plugins: {}, // for any quasar plugins you might use in the future
+  plugins: { Notify },
   config: {
     brand: {
       primary: '#1976D2',
@@ -27,5 +30,8 @@ app.use(Quasar, {
     }
   }
 })
+
+app.use(pinia)
+app.use(router)
 
 app.mount('#app')

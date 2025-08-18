@@ -1,18 +1,10 @@
 <template>
   <div id="app">
-    <TestIntegration />
+    <router-view />
   </div>
 </template>
-
-<script>
-import TestIntegration from './components/TestIntegration.vue'
-
-export default {
-  name: 'App',
-  components: {
-    TestIntegration
-  }
-}
+<script setup>
+// No direct imports needed - router handles component rendering
 </script>
 
 <style>
