@@ -2,26 +2,35 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
+  // Home routes
   {
     path: '/',
     name: 'HomePage',
-    component: () => import('@/views/HomePage.vue'),
+    component: () => import('@/views/home/HomePage.vue'),
   },
+  
+  // Admin authentication routes
   {
-    path: '/admin-register',
+    path: '/admin/register',
     name: 'AdminRegister',
-    component: () => import('@/views/AdminSetup.vue'),
+    component: () => import('@/views/admin/auth/AdminSetup.vue'),
   },
   {
-    path: '/admin-login',
+    path: '/admin/login',
     name: 'AdminLogin',
-    component: () => import('@/views/Login.vue'),
+    component: () => import('@/views/admin/auth/Login.vue'),
   },
+  
+  // Admin dashboard routes
   {
     path: '/admin',
-    component: () => import('@/components/LayOut.vue'),
+    component: () => import('@/components/admin/AdminLayout.vue'),
     meta: { requiresAuth: true },
     children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard',
+      },
       {
         path: 'dashboard',
         name: 'AdminDashboard',
@@ -53,7 +62,7 @@ const routes = [
         component: () => import('@/views/admin/Categories.vue'),
       },
       {
-        path: 'all-orders',
+        path: 'orders',
         name: 'AllOrders',
         component: () => import('@/views/admin/Orders.vue'),
       },
@@ -114,21 +123,21 @@ router.beforeEach(async (to, from, next) => {
   const isAdminSetup = await authStore.checkAdminSetup()
   
   // If admin is not set up and not going to register page, redirect to register
-  if (!isAdminSetup && to.path !== '/admin-register' && to.path.startsWith('/admin')) {
-    next('/admin-register')
+  if (!isAdminSetup && to.path !== '/admin/register' && to.path.startsWith('/admin')) {
+    next('/admin/register')
     return
   }
   
   // If admin is set up but going to register page, redirect to login
-  if (isAdminSetup && to.path === '/admin-register') {
-    next('/admin-login')
+  if (isAdminSetup && to.path === '/admin/register') {
+    next('/admin/login')
     return
   }
   
   // Handle authentication requirements for admin routes
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    next('/admin-login')
-  } else if (to.path === '/admin-login' && authStore.isLoggedIn) {
+    next('/admin/login')
+  } else if (to.path === '/admin/login' && authStore.isLoggedIn) {
     next('/admin/dashboard')
   } else {
     next()

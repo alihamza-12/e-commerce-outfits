@@ -1,5 +1,5 @@
 <template>
-  <q-footer elevated class="bg-dark text-white">
+  <footer class="bg-dark text-white">
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12 col-md-3">
@@ -77,7 +77,7 @@
         &copy; 2024 StyleHub. All rights reserved.
       </div>
     </div>
-  </q-footer>
+  </footer>
 </template>
 
 <script>
@@ -101,3 +101,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+footer {
+  margin-top: auto;
+}
+</style>
