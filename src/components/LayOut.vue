@@ -216,7 +216,7 @@ const handleLogout = async () => {
       message: 'Logged out successfully',
       position: 'top'
     })
-    router.push('/login')
+    router.push('/admin-login')
   } catch (error) {
     $q.notify({
       type: 'negative',

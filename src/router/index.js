@@ -4,7 +4,8 @@ import { useAuthStore } from '@/stores/auth'
 const routes = [
   {
     path: '/',
-    redirect: '/admin/dashboard',
+    name: 'HomePage',
+    component: () => import('@/views/HomePage.vue'),
   },
   {
     path: '/admin-register',
@@ -103,11 +104,17 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Check if admin is set up
+  // Allow home page to be accessed without any checks
+  if (to.path === '/') {
+    next()
+    return
+  }
+  
+  // Check if admin is set up for admin-related routes
   const isAdminSetup = await authStore.checkAdminSetup()
   
   // If admin is not set up and not going to register page, redirect to register
-  if (!isAdminSetup && to.path !== '/admin-register') {
+  if (!isAdminSetup && to.path !== '/admin-register' && to.path.startsWith('/admin')) {
     next('/admin-register')
     return
   }
@@ -118,7 +125,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // Handle authentication requirements
+  // Handle authentication requirements for admin routes
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     next('/admin-login')
   } else if (to.path === '/admin-login' && authStore.isLoggedIn) {

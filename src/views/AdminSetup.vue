@@ -86,7 +86,7 @@ const onSubmit = async () => {
       position: 'top'
     })
     
-    router.push('/login')
+    router.push('/admin-login')
   } catch (error) {
     $q.notify({
       type: 'negative',
