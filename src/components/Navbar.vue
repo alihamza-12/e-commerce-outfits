@@ -135,8 +135,6 @@
 			</q-scroll-area>
 		</q-drawer>
 	</q-header>
-
-	
 </template>
 
 <script setup>
@@ -149,9 +147,9 @@
 
 	const navItems = [
 		{ label: "Home", to: "/" },
-		{ label: "Men", to: "/men" },
-		{ label: "Women", to: "/products/women" }, // <-- Add this
 		{ label: "Shop", to: "/shop" },
+		{ label: "Men", to: "/men" },
+		{ label: "Women", to: "/women" }, // <-- Add this
 		{ label: "Contact", to: "/contact" },
 	];
 

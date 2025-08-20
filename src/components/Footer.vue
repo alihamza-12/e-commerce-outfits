@@ -63,7 +63,7 @@
 					<ul class="space-y-2">
 						<li>
 							<router-link
-								to="/category/women"
+								to="/women"
 								aria-label="Women's Fashion"
 								class="footer-link-tw group"
 								>Women's Fashion</router-link
@@ -71,7 +71,7 @@
 						</li>
 						<li>
 							<router-link
-								to="/category/men"
+								to="/men"
 								aria-label="Men's Fashion"
 								class="footer-link-tw group"
 								>Men's Fashion</router-link

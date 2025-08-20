@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Men from '@/views/home/Men.vue'
-
+import Women from '@/views/home/Women.vue'
+import Shop from '@/views/home/Shop.vue'
 const routes = [
   // Home routes
   {
@@ -13,6 +14,16 @@ const routes = [
     path: '/men',
     component: Men,
   },
+    {
+    path: '/women',
+    component: Women,
+  },
+  {
+    path: '/shop',
+    component: Shop,
+  },
+  
+
 
   // Admin authentication routes
   {

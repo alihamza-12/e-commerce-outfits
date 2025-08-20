@@ -14,7 +14,7 @@
 						Quality meets affordability in every piece.
 					</p>
 					<div class="hero-btns">
-						<router-link to="/products/women" class="hero-btn hero-btn-primary">
+						<router-link to="/women" class="hero-btn hero-btn-primary">
 							<i class="bi bi-gender-female"></i>
 							Shop Women
 						</router-link>
@@ -56,40 +56,23 @@
 		</section>
 
 		<!-- Categories Section -->
-		<section class="q-py-xl">
-			<div class="container q-px-md">
-				<h2 class="text-h4 text-center q-mb-xl animate-fadeInUp">
-					Shop by Category
-				</h2>
-				<div class="row q-col-gutter-lg justify-center">
+		<section class="max-w-7xl mx-auto px-4 mb-12">
+			<h2 class="text-3xl font-bold text-gray-800 mb-6">Shop by Category</h2>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+				<router-link
+					v-for="cat in featuredCategories"
+					:key="cat.name"
+					:to="cat.link"
+					class="group block bg-white rounded-2xl shadow hover:shadow-xl transition p-6 text-center">
+					<img
+						:src="cat.image"
+						:alt="cat.name"
+						class="mx-auto h-24 w-24 object-cover mb-3 rounded-full group-hover:scale-110 transition" />
 					<div
-						v-for="cat in categories"
-						:key="cat.name"
-						class="col-12 col-sm-6 col-md-3">
-						<q-card
-							class="category-card cursor-pointer flex flex-col items-center q-pa-md hoverable animate-fadeInUp"
-							@click="$router.push(cat.link)">
-							<div class="category-img-wrapper q-mb-md">
-								<q-img
-									:src="cat.image"
-									height="160px"
-									width="100%"
-									class="rounded-borders category-img"
-									style="object-fit: cover">
-									<div class="category-overlay absolute-full flex flex-center">
-										<q-btn
-											color="primary"
-											label="Explore"
-											size="md"
-											flat
-											class="category-explore-btn" />
-									</div>
-								</q-img>
-							</div>
-							<div class="text-h6 text-center q-mt-sm">{{ cat.name }}</div>
-						</q-card>
+						class="text-lg font-semibold text-gray-700 group-hover:text-blue-600">
+						{{ cat.name }}
 					</div>
-				</div>
+				</router-link>
 			</div>
 		</section>
 
@@ -304,39 +287,65 @@
 	const email = ref("");
 	const loading = ref(false);
 
-	const categories = [
-		{
-			name: "Women",
-			icon: "female",
-			color: "pink-5",
-			image:
-				"https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=400",
-			link: "/products/women",
-		},
+	const featuredCategories = [
 		{
 			name: "Men",
-			icon: "male",
-			color: "blue-5",
 			image:
-				"https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400",
+				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=200&q=80",
 			link: "/men",
 		},
 		{
-			name: "Accessories",
-			icon: "watch",
-			color: "amber-7",
+			name: "Women",
 			image:
-				"https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400",
-			link: "/products/accessories",
+				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
+			link: "/women",
+		},
+		{
+			name: "Accessories",
+			image:
+				"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80",
+			link: "/shop",
 		},
 		{
 			name: "Shoes",
-			icon: "directions_run",
-			color: "deep-orange-5",
-			image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400",
-			link: "/products/shoes",
+			image:
+				"https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=200&q=80",
+			link: "/shop",
 		},
 	];
+	// const categories = [
+	// 	{
+	// 		name: "Women",
+	// 		icon: "female",
+	// 		color: "pink-5",
+	// 		image:
+	// 			"https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=400",
+	// 		link: "/women",
+	// 	},
+	// 	{
+	// 		name: "Men",
+	// 		icon: "male",
+	// 		color: "blue-5",
+	// 		image:
+	// 			"https://images.unsplash.com/photo-1617137968427-85924c800a22?w=400",
+	// 		link: "/men",
+	// 	},
+	// 	{
+	// 		name: "Accessories",
+	// 		icon: "watch",
+	// 		color: "amber-7",
+	// 		image:
+	// 			"https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400",
+	// 		link: "/products/accessories",
+	// 	},
+	// 	{
+	// 		name: "Shoes",
+	// 		icon: "directions_run",
+	// 		color: "deep-orange-5",
+	// 		image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400",
+	// 		link: "/products/shoes",
+	// 	},
+	// ];
 
 	const featuredProducts = ref([
 		{
@@ -520,7 +529,13 @@
 
 <style scoped>
 	@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
-
+	/* Optional: Add custom hover effect if you want */
+	.group:hover .group-hover\:scale-110 {
+		transform: scale(1.1);
+	}
+	.group:hover .group-hover\:text-blue-600 {
+		color: #2563eb;
+	}
 	.container {
 		max-width: 1200px;
 		margin: 0 auto;
@@ -874,6 +889,7 @@
 		color: #22223b;
 		border: none;
 	}
+
 	.hero-btn-primary:hover,
 	.hero-btn-primary:focus {
 		background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
@@ -887,6 +903,7 @@
 		color: #fff;
 		border: 2px solid #fff;
 	}
+
 	.hero-btn-outline:hover,
 	.hero-btn-outline:focus {
 		background: #fff;
@@ -936,6 +953,7 @@
 		0% {
 			background-position: 0%;
 		}
+
 		100% {
 			background-position: 100%;
 		}
@@ -945,6 +963,7 @@
 		0% {
 			opacity: 0;
 		}
+
 		100% {
 			opacity: 1;
 		}
@@ -954,12 +973,15 @@
 		.hero-title {
 			font-size: 2.2rem;
 		}
+
 		.hero-title-bold {
 			font-size: 2.5rem;
 		}
+
 		.hero-left {
 			padding: 3rem 1.2rem 3rem 1.2rem;
 		}
+
 		.hero-right {
 			padding: 1.2rem;
 		}
@@ -971,15 +993,18 @@
 			align-items: stretch;
 			padding: 0;
 		}
+
 		.hero-section {
 			border-radius: 14px;
 			min-height: 320px;
 			padding: 0;
 		}
+
 		.hero-left,
 		.hero-right {
 			padding: 2rem 0.7rem;
 		}
+
 		.hero-img-card {
 			margin: 2rem auto 0 auto;
 			max-width: 98vw;
@@ -992,20 +1017,25 @@
 			min-height: 220px;
 			padding: 0;
 		}
+
 		.hero-title {
 			font-size: 1.3rem;
 		}
+
 		.hero-title-bold {
 			font-size: 1.5rem;
 		}
+
 		.hero-left,
 		.hero-right {
 			padding: 1.2rem 0.5rem;
 		}
+
 		.hero-img-card {
 			padding: 0.2rem;
 			border-radius: 0.7rem;
 		}
+
 		.hero-img {
 			border-radius: 0.5rem;
 		}
