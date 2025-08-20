@@ -112,8 +112,8 @@
 							:class="{ 'is-invalid': formSubmitted && !role }"
 							required>
 							<option disabled value="">Choose your role</option>
-							<option value="admin">Seller</option>
-							<option value="doctor">Buyer</option>
+							<option value="seller">Seller</option>
+							<option value="buyer">Buyer</option>
 						</select>
 						<div class="invalid-feedback" v-if="formSubmitted && !role">
 							Please select your role.
@@ -159,9 +159,10 @@
 <script setup>
 	import { ref, computed } from "vue";
 	import { useRouter } from "vue-router";
-	import axios from "@/api/axios";
+	import { useAuthStore } from "@/stores/auth";
 
 	const router = useRouter();
+	const authStore = useAuthStore();
 	const name = ref("");
 	const email = ref("");
 	const password = ref("");
@@ -199,28 +200,22 @@
 
 		loading.value = true;
 		try {
-			await axios.post("/register", {
+			const authStore = useAuthStore();
+			const response = await authStore.register({
 				name: name.value,
 				email: email.value,
 				password: password.value,
-				role: role.value,
+				role: role.value, // Direct role assignment since form now uses correct values
 			});
-			localStorage.setItem(
-				"registeredUser",
-				JSON.stringify({
-					name: name.value,
-					email: email.value,
-					password: password.value,
-					role: role.value,
-				})
-			);
-			alert("Registration successful! Please log in.");
-			router.push("/loginuser");
+
+			if (response.success) {
+				alert("Registration successful! Please log in.");
+				router.push("/loginuser");
+			} else {
+				alert(response.message || "Registration failed. Please try again.");
+			}
 		} catch (error) {
-			alert(
-				error.response?.data?.message ||
-					"Registration failed. Please try again."
-			);
+			alert("Registration failed. Please try again.");
 		} finally {
 			loading.value = false;
 		}

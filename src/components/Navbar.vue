@@ -62,19 +62,22 @@
 					:class="{ 'spin-once': cartSpinning }"
 					@click="spinCart" />
 
-				<!-- Sign Up & Log In Buttons -->
-				<router-link
-					to="/registeruser"
-					class="signup-btn q-ml-md"
-					active-class="active-auth-btn">
-					Sign Up
-				</router-link>
-				<router-link
-					to="/loginuser"
-					class="login-btn q-ml-sm"
-					active-class="active-auth-btn">
-					Log In
-				</router-link>
+				<!-- Show UserProfile when logged in, auth buttons when logged out -->
+				<UserProfile v-if="isLoggedIn" />
+				<template v-else>
+					<router-link
+						to="/registeruser"
+						class="signup-btn q-ml-md"
+						active-class="active-auth-btn">
+						Sign Up
+					</router-link>
+					<router-link
+						to="/loginuser"
+						class="login-btn q-ml-sm"
+						active-class="active-auth-btn">
+						Log In
+					</router-link>
+				</template>
 			</div>
 
 			<!-- Mobile Toggle Button -->
@@ -125,12 +128,17 @@
 						<q-badge color="red" class="q-ml-sm">3</q-badge>
 					</q-item>
 
-					<q-item clickable class="drawer-link" @click="drawer = false">
-						<q-item-section avatar>
-							<q-icon name="person" />
-						</q-item-section>
-						<q-item-section>Login</q-item-section>
-					</q-item>
+					<template v-if="isLoggedIn">
+						<UserProfile />
+					</template>
+					<template v-else>
+						<q-item clickable class="drawer-link" @click="drawer = false">
+							<q-item-section avatar>
+								<q-icon name="person" />
+							</q-item-section>
+							<q-item-section>Login</q-item-section>
+						</q-item>
+					</template>
 				</q-list>
 			</q-scroll-area>
 		</q-drawer>
@@ -139,17 +147,22 @@
 
 <script setup>
 	import { ref, computed, nextTick } from "vue";
+	import { useAuthStore } from '../stores/auth';
+	import UserProfile from './common/UserProfile.vue';
 
+	const authStore = useAuthStore();
 	const drawer = ref(false);
 	const showSearch = ref(false);
 	const searchQuery = ref("");
 	const cartSpinning = ref(false);
 
+	const isLoggedIn = computed(() => authStore.isAuthenticated);
+
 	const navItems = [
 		{ label: "Home", to: "/" },
 		{ label: "Shop", to: "/shop" },
 		{ label: "Men", to: "/men" },
-		{ label: "Women", to: "/women" }, // <-- Add this
+		{ label: "Women", to: "/women" },
 		{ label: "Contact", to: "/contact" },
 	];
 

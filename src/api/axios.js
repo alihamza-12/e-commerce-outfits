@@ -8,7 +8,7 @@
 export default {
     post(url, data) {
         // Simulate a successful login/signup and store token in localStorage
-        if (url === "/login") {
+        if (url === "/loginuser") {
             localStorage.setItem("Token", "dummy_token");
             return Promise.resolve({ data: { data: { access_token: "dummy_token" } } });
         }

@@ -60,30 +60,15 @@
 							Please enter your password.
 						</div>
 					</div>
-					<!-- Role -->
-					<div class="form-group">
-						<label for="role">Select Role</label>
-						<select
-							id="role"
-							v-model="role"
-							class="form-control"
-							:class="{ 'is-invalid': formSubmitted && !role }"
-							required>
-							<option disabled value="">Choose your role</option>
-							<option value="admin">Seller</option>
-							<option value="doctor">Buyer</option>
-							
-						</select>
-						<div class="invalid-feedback" v-if="formSubmitted && !role">
-							Please select your role.
-						</div>
-					</div>
 					<button type="submit" class="btn-signup" :disabled="loading">
 						<span
 							v-if="loading"
 							class="spinner-border spinner-border-sm me-2"></span>
 						LOG IN
 					</button>
+					<div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
+						{{ errorMessage }}
+					</div>
 					<div class="register-bottom">
 						<span>Don't have an account?</span>
 						<router-link to="/registeruser" class="register-link"
@@ -99,11 +84,12 @@
 <script setup>
 	import { ref, computed } from "vue";
 	import { useRouter } from "vue-router";
+	import { useAuthStore } from "@/stores/auth";
 
 	const router = useRouter();
+	const authStore = useAuthStore();
 	const email = ref("");
 	const password = ref("");
-	const role = ref("");
 	const loading = ref(false);
 	const formRef = ref(null);
 	const formSubmitted = ref(false);
@@ -124,35 +110,33 @@
 		}
 		loading.value = true;
 		try {
-			// Get registered user from localStorage
-			const userStr = localStorage.getItem("registeredUser");
-			if (!userStr) {
-				alert("No registered user found. Please sign up first.");
-				loading.value = false;
-				return;
-			}
-			const user = JSON.parse(userStr);
-
-			if (
-				user.email === email.value &&
-				user.password === password.value &&
-				user.role === role.value
-			) {
-				// Simulate token
-				localStorage.setItem("Token", "dummy_token");
-				// Redirect by role
-				if (role.value === "admin") {
-					router.push("/admin-dashboard");
-				} else if (role.value === "doctor") {
-					router.push("/doctor-dashboard");
-				} else if (role.value === "patient") {
-					router.push("/patient-dashboard");
+			// Use auth store for unified login
+			const response = await authStore.login({
+				email: email.value,
+				password: password.value
+			});
+			
+			if (response.success) {
+				// Redirect based on role from auth store
+				const role = authStore.role;
+				switch(role) {
+					case 'admin':
+						router.push('/admin/dashboard');
+						break;
+					case 'seller':
+						router.push('/seller/dashboard');
+						break;
+					case 'buyer':
+						router.push('/');
+						break;
+					default:
+						router.push('/');
 				}
 			} else {
-				alert("Invalid credentials or role. Please try again.");
+				alert(response.message || "Invalid credentials. Please try again.");
 			}
 		} catch (error) {
-			alert("Login failed. Please try again.");
+			alert(error.message || "Login failed. Please try again.");
 		} finally {
 			loading.value = false;
 		}

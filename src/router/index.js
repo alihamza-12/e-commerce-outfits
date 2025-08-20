@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import Men from '@/views/home/Men.vue'
 import Women from '@/views/home/Women.vue'
 import Shop from '@/views/home/Shop.vue'
+
 const routes = [
   // Home routes
   {
@@ -14,7 +15,7 @@ const routes = [
     path: '/men',
     component: Men,
   },
-    {
+  {
     path: '/women',
     component: Women,
   },
@@ -22,26 +23,12 @@ const routes = [
     path: '/shop',
     component: Shop,
   },
-  
 
-
-  // Admin authentication routes
-  {
-    path: '/admin/register',
-    name: 'AdminRegister',
-    component: () => import('@/views/admin/auth/AdminSetup.vue'),
-  },
-  {
-    path: '/admin/login',
-    name: 'AdminLogin',
-    component: () => import('@/views/admin/auth/Login.vue'),
-  },
-
-  // Admin dashboard routes
+  // Unified admin routes - accessible through main login
   {
     path: '/admin',
     component: () => import('@/components/admin/AdminLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresRole: 'admin' },
     children: [
       {
         path: '',
@@ -120,7 +107,33 @@ const routes = [
     ],
   },
 
-  // User Signup route
+  // Seller routes
+  {
+    path: '/seller',
+    redirect: '/seller/dashboard',
+    meta: { requiresAuth: true, requiresRole: 'seller' }
+  },
+  {
+    path: '/seller/dashboard',
+    name: 'SellerDashboard',
+    component: () => import('@/views/seller/Dashboard.vue'),
+    meta: { requiresAuth: true, requiresRole: 'seller' }
+  },
+
+  // Buyer routes
+  {
+    path: '/buyer',
+    redirect: '/buyer/dashboard',
+    meta: { requiresAuth: true, requiresRole: 'buyer' }
+  },
+  {
+    path: '/buyer/dashboard',
+    name: 'BuyerDashboard',
+    component: () => import('@/views/home/HomePage.vue'),
+    meta: { requiresAuth: true, requiresRole: 'buyer' }
+  },
+
+  // User authentication routes
   {
     path: '/registeruser',
     name: 'RegisterUser',
@@ -147,29 +160,57 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // Check if admin is set up for admin-related routes
-  const isAdminSetup = await authStore.checkAdminSetup()
+  // Handle authentication requirements
+  if (to.meta.requiresAuth) {
+    if (!authStore.isLoggedIn) {
+      next('/loginuser')
+      return
+    }
 
-  // If admin is not set up and not going to register page, redirect to register
-  if (!isAdminSetup && to.path !== '/admin/register' && to.path.startsWith('/admin')) {
-    next('/admin/register')
+    // Handle role-based access
+    if (to.meta.requiresRole) {
+      const requiredRole = to.meta.requiresRole
+      const userRole = authStore.role
+      
+      if (userRole !== requiredRole) {
+        // Redirect based on actual role
+        switch(userRole) {
+          case 'admin':
+            next('/admin/dashboard')
+            break
+          case 'seller':
+            next('/seller/dashboard')
+            break
+          case 'buyer':
+            next('/')
+            break
+          default:
+            next('/')
+        }
+        return
+      }
+    }
+  }
+
+  // Redirect logged-in users away from login/register
+  if ((to.path === '/loginuser' || to.path === '/registeruser') && authStore.isLoggedIn) {
+    switch(authStore.role) {
+      case 'admin':
+        next('/admin/dashboard')
+        break
+      case 'seller':
+        next('/seller/dashboard')
+        break
+      case 'buyer':
+        next('/')
+        break
+      default:
+        next('/')
+    }
     return
   }
 
-  // If admin is set up but going to register page, redirect to login
-  if (isAdminSetup && to.path === '/admin/register') {
-    next('/admin/login')
-    return
-  }
-
-  // Handle authentication requirements for admin routes
-  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    next('/admin/login')
-  } else if (to.path === '/admin/login' && authStore.isLoggedIn) {
-    next('/admin/dashboard')
-  } else {
-    next()
-  }
+  next()
 })
 
 export default router
