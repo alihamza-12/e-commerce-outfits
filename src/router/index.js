@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import Men from '@/views/home/Men.vue'
 
 const routes = [
   // Home routes
@@ -8,7 +9,11 @@ const routes = [
     name: 'HomePage',
     component: () => import('@/views/home/HomePage.vue'),
   },
-  
+  {
+    path: '/men',
+    component: Men,
+  },
+
   // Admin authentication routes
   {
     path: '/admin/register',
@@ -20,7 +25,7 @@ const routes = [
     name: 'AdminLogin',
     component: () => import('@/views/admin/auth/Login.vue'),
   },
-  
+
   // Admin dashboard routes
   {
     path: '/admin',
@@ -103,6 +108,18 @@ const routes = [
       },
     ],
   },
+
+  // User Signup route
+  {
+    path: '/registeruser',
+    name: 'RegisterUser',
+    component: () => import('@/components/auth/RegisterUser.vue'),
+  },
+  {
+    path: '/loginuser',
+    name: 'LoginUser',
+    component: () => import('@/components/auth/LoginUser.vue'),
+  },
 ]
 
 const router = createRouter({
@@ -112,28 +129,28 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Allow home page to be accessed without any checks
   if (to.path === '/') {
     next()
     return
   }
-  
+
   // Check if admin is set up for admin-related routes
   const isAdminSetup = await authStore.checkAdminSetup()
-  
+
   // If admin is not set up and not going to register page, redirect to register
   if (!isAdminSetup && to.path !== '/admin/register' && to.path.startsWith('/admin')) {
     next('/admin/register')
     return
   }
-  
+
   // If admin is set up but going to register page, redirect to login
   if (isAdminSetup && to.path === '/admin/register') {
     next('/admin/login')
     return
   }
-  
+
   // Handle authentication requirements for admin routes
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     next('/admin/login')
