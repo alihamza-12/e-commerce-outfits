@@ -1,15 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import Men from '@/views/home/Men.vue'
-import Women from '@/views/home/Women.vue'
-import Shop from '@/views/home/Shop.vue'
+import HomePage from '../views/home/HomePage.vue'
+import Shop from '../views/home/Shop.vue'
+import Contact from '../views/home/Contact.vue'
+import Men from '../views/home/Men.vue'
+import Women from '../views/home/Women.vue'
+import KidsFashion from '../views/home/KidsFashion.vue'
 
 const routes = [
   // Home routes
   {
     path: '/',
     name: 'HomePage',
-    component: () => import('@/views/home/HomePage.vue'),
+    component: HomePage,
   },
   {
     path: '/men',
@@ -22,6 +25,14 @@ const routes = [
   {
     path: '/shop',
     component: Shop,
+  },
+  {
+    path: '/contact',
+    component: Contact,
+  },
+    {
+    path: '/kids',
+    component: KidsFashion,
   },
 
   // Unified admin routes - accessible through main login
@@ -171,10 +182,10 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresRole) {
       const requiredRole = to.meta.requiresRole
       const userRole = authStore.role
-      
+
       if (userRole !== requiredRole) {
         // Redirect based on actual role
-        switch(userRole) {
+        switch (userRole) {
           case 'admin':
             next('/admin/dashboard')
             break
@@ -194,7 +205,7 @@ router.beforeEach(async (to, from, next) => {
 
   // Redirect logged-in users away from login/register
   if ((to.path === '/loginuser' || to.path === '/registeruser') && authStore.isLoggedIn) {
-    switch(authStore.role) {
+    switch (authStore.role) {
       case 'admin':
         next('/admin/dashboard')
         break
