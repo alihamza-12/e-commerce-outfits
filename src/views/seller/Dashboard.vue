@@ -1,71 +1,125 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <q-header elevated class="bg-primary text-white">
-      <q-toolbar>
-        <q-toolbar-title>Seller Dashboard</q-toolbar-title>
-        <UserProfile />
-        <q-btn flat @click="logout" label="Logout" />
-      </q-toolbar>
-    </q-header>
+  <q-page class="q-pa-md">
+    <div class="row q-col-gutter-md">
+      <!-- Header -->
+      <div class="col-12">
+        <h1 class="text-h4 q-mb-md">Seller Dashboard</h1>
+      </div>
 
-    <q-page-container>
-      <q-page padding>
-        <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-4">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">Total Products</div>
-                <div class="text-h4 text-primary">12</div>
-              </q-card-section>
-            </q-card>
-          </div>
-          
-          <div class="col-12 col-md-4">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">Total Orders</div>
-                <div class="text-h4 text-positive">45</div>
-              </q-card-section>
-            </q-card>
-          </div>
-          
-          <div class="col-12 col-md-4">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">Revenue</div>
-                <div class="text-h4 text-accent">$2,340</div>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
+      <!-- Stats Cards -->
+      <div class="col-12 col-md-3">
+        <q-card class="my-card">
+          <q-card-section>
+            <div class="text-h6">Total Revenue</div>
+            <div class="text-h4 text-positive">$12,450</div>
+            <div class="text-caption">+15% from last month</div>
+          </q-card-section>
+        </q-card>
+      </div>
 
-        <div class="row q-mt-md">
-          <div class="col-12">
-            <q-card>
-              <q-card-section>
-                <div class="text-h6">Welcome, {{ user?.name || 'Seller' }}</div>
-                <p class="q-mt-sm">Manage your products and orders from this dashboard.</p>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+      <div class="col-12 col-md-3">
+        <q-card class="my-card">
+          <q-card-section>
+            <div class="text-h6">Total Orders</div>
+            <div class="text-h4 text-primary">245</div>
+            <div class="text-caption">+8% from last month</div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <q-card class="my-card">
+          <q-card-section>
+            <div class="text-h6">Active Products</div>
+            <div class="text-h4 text-purple">89</div>
+            <div class="text-caption">12 low stock items</div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <q-card class="my-card">
+          <q-card-section>
+            <div class="text-h6">Customers</div>
+            <div class="text-h4 text-orange">1,234</div>
+            <div class="text-caption">+5% from last month</div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="col-12 col-md-8">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Sales Overview</div>
+            <div class="q-mt-md">
+              <canvas id="salesChart" height="300"></canvas>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="col-12 col-md-4">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Recent Activity</div>
+            <q-list>
+              <q-item>
+                <q-item-section>
+                  <q-item-label>New order #1234</q-item-label>
+                  <q-item-label caption>2 hours ago</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label>Product restocked</q-item-label>
+                  <q-item-label caption>4 hours ago</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section>
+                  <q-item-label>Revenue milestone</q-item-label>
+                  <q-item-label caption>1 day ago</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+  </q-page>
 </template>
 
-<script setup>
-import { computed } from 'vue'
-import { useAuthStore } from '../../stores/auth'
-import UserProfile from '../../components/common/UserProfile.vue'
-import { useRouter } from 'vue-router'
+<script>
+import { defineComponent } from 'vue'
 
-const authStore = useAuthStore()
-const router = useRouter()
-const user = computed(() => authStore.currentUser)
-
-const logout = () => {
-  authStore.logout()
-  router.push('/loginuser')
-}
+export default defineComponent({
+  name: 'SellerDashboard',
+  data() {
+    return {
+      stats: {
+        revenue: 12450,
+        orders: 245,
+        products: 89,
+        customers: 1234
+      }
+    }
+  },
+  mounted() {
+    this.initializeCharts()
+  },
+  methods: {
+    initializeCharts() {
+      // Initialize chart.js or other charting library
+      console.log('Initializing charts...')
+    }
+  }
+})
 </script>
+
+<style scoped>
+.my-card {
+  width: 100%;
+}
+</style>
