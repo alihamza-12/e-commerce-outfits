@@ -4,7 +4,7 @@
 		<Navbar v-if="!isAdminRoute && !isAuthRoute" />
 
 		<q-page-container>
-			<router-view />
+			<router-view :class="{ 'body--dark': $q.dark.isActive }" />
 		</q-page-container>
 
 		<!-- Only show Footer for non-admin and non-auth routes -->
@@ -15,9 +15,11 @@
 <script setup>
 	import { computed } from "vue";
 	import { useRoute } from "vue-router";
+	import { useQuasar } from "quasar";
 	import Navbar from "./components/Navbar.vue";
 	import Footer from "./components/Footer.vue";
 
+	const $q = useQuasar();
 	const route = useRoute();
 
 	// Check if current route is an admin route

@@ -25,7 +25,7 @@
 					<ul class="space-y-2">
 						<li>
 							<router-link
-								to="/about"
+								to="/"
 								aria-label="About Us"
 								class="footer-link-tw group"
 								>About Us</router-link
@@ -40,13 +40,13 @@
 							>
 						</li>
 						<li>
-							<router-link to="/faq" aria-label="FAQ" class="footer-link-tw group"
+							<router-link to="/contact" aria-label="FAQ" class="footer-link-tw group"
 								>FAQ</router-link
 							>
 						</li>
 						<li>
 							<router-link
-								to="/shipping-returns"
+								to="/contact"
 								aria-label="Shipping and Returns"
 								class="footer-link-tw group"
 								>Shipping & Returns</router-link
@@ -79,7 +79,7 @@
 						</li>
 						<li>
 							<router-link
-								to="/category/kids"
+								to="/kids"
 								aria-label="Kids' Fashion"
 								class="footer-link-tw group"
 								>Kids' Fashion</router-link
@@ -87,7 +87,7 @@
 						</li>
 						<li>
 							<router-link
-								to="/category/accessories"
+								to="/shop"
 								aria-label="Accessories"
 								class="footer-link-tw group"
 								>Accessories</router-link

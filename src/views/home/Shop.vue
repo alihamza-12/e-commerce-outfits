@@ -1,307 +1,428 @@
 <template>
-  <div class="bg-gradient-to-br from-blue-50 to-pink-50 min-h-screen">
-    <!-- Hero Section -->
-    <section class="relative bg-white rounded-3xl shadow-xl mx-auto max-w-7xl mt-8 mb-12 overflow-hidden flex flex-col md:flex-row items-center">
-      <div class="p-10 flex-1">
-        <h1 class="text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
-          Discover Your <span class="text-blue-600">Style</span><br />
-          Shop the Latest <span class="text-pink-500">Trends</span>
-        </h1>
-        <p class="text-lg text-gray-600 mb-6">
-          Explore our exclusive collection for Men, Women & Accessories. Fast delivery, easy returns, and best prices!
-        </p>
-        <div class="flex gap-4">
-          <router-link to="/shop">
-            <button class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-blue-700 transition">
-              Shop Now
-            </button>
-          </router-link>
-          <router-link to="/men">
-            <button class="bg-gray-100 text-blue-700 px-6 py-3 rounded-lg font-bold shadow hover:bg-blue-200 transition">
-              Men's Collection
-            </button>
-          </router-link>
-          <router-link to="/women">
-            <button class="bg-pink-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-pink-700 transition">
-              Women's Collection
-            </button>
-          </router-link>
-        </div>
-      </div>
-      <div class="flex-1 flex items-center justify-center">
-        <img
-          src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=600&q=80"
-          alt="Fashion Banner"
-          class="w-full h-96 object-cover"
-        />
-      </div>
-    </section>
+	<q-page
+		class="bg-gradient-to-br from-gray-50 to-white min-h-screen flex flex-col">
+		<!-- HERO / NEW COLLECTIONS -->
+		<section class="w-full bg-white py-16">
+			<div class="max-w-7xl mx-auto px-4">
+				<div class="text-center mb-12">
+					<h1
+						class="text-5xl md:text-6xl font-serif font-extrabold tracking-tight mb-4 text-gray-900 drop-shadow-lg">
+						New Collections
+					</h1>
+					<p class="max-w-2xl mx-auto text-lg text-gray-600 mb-8">
+						Discover the latest arrivals and timeless classics. Crafted with
+						premium materials and designed for those who appreciate style,
+						comfort, and quality.
+					</p>
+				</div>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+					<div
+						v-for="item in heroCollections"
+						:key="item.id"
+						class="group bg-gradient-to-br from-gray-100 to-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden relative">
+						<q-img
+							:src="item.image"
+							:alt="item.title"
+							class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-500"
+							style="border-radius: 1.5rem 1.5rem 0 0"
+							:ratio="4 / 5">
+							<div
+								class="absolute top-4 left-4 bg-white/80 px-4 py-1 rounded-full text-xs font-semibold text-gray-700 shadow">
+								NEW
+							</div>
+						</q-img>
+						<div class="p-6 flex flex-col gap-2">
+							<div class="flex items-center gap-2">
+								<span
+									class="uppercase text-xs font-bold tracking-widest text-primary-700"
+									>{{ item.tag }}</span
+								>
+								<q-badge
+									v-if="item.limited"
+									color="deep-orange"
+									label="Limited"
+									class="ml-2" />
+							</div>
+							<div
+								class="font-serif text-2xl font-bold text-gray-900 mb-1 group-hover:text-primary-700 transition">
+								{{ item.title }}
+							</div>
+							<div class="text-gray-500 text-base mb-3">{{ item.desc }}</div>
+							<q-btn
+								unelevated
+								color="primary"
+								class="w-max px-6 py-2 rounded-full font-semibold tracking-wide shadow hover:scale-105 transition"
+								label="DISCOVER NOW"
+								@click="discover(item)" />
+						</div>
+						<div
+							class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-primary-400 via-primary-200 to-primary-400 opacity-0 group-hover:opacity-100 transition"></div>
+					</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- Featured Categories -->
-    <section class="max-w-7xl mx-auto px-4 mb-12">
-      <h2 class="text-3xl font-bold text-gray-800 mb-6">Shop by Category</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <router-link
-          v-for="cat in featuredCategories"
-          :key="cat.name"
-          :to="cat.link"
-          class="group block bg-white rounded-2xl shadow hover:shadow-xl transition p-6 text-center"
-        >
-          <img :src="cat.image" :alt="cat.name" class="mx-auto h-24 w-24 object-cover mb-3 rounded-full group-hover:scale-110 transition" />
-          <div class="text-lg font-semibold text-gray-700 group-hover:text-blue-600">{{ cat.name }}</div>
-        </router-link>
-      </div>
-    </section>
+		<!-- FEATURES -->
+		<section class="w-full bg-white py-12 border-b">
+			<div
+				class="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+				<div
+					v-for="feature in features"
+					:key="feature.title"
+					class="flex flex-col items-center group">
+					<q-icon
+						:name="feature.icon"
+						size="38px"
+						class="mb-3 text-primary-700 group-hover:text-primary-900 transition" />
+					<div class="font-semibold mb-1 text-gray-900">
+						{{ feature.title }}
+					</div>
+					<div class="text-xs text-gray-500">{{ feature.desc }}</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- Trending Products -->
-    <section class="max-w-7xl mx-auto px-4 mb-12">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">Trending Products</h2>
-        <router-link to="/shop" class="text-blue-600 hover:underline font-semibold">View All</router-link>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <div
-          v-for="(product, idx) in trendingProducts"
-          :key="idx"
-          class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition p-4 flex flex-col relative group"
-        >
-          <img
-            :src="product.image"
-            :alt="product.name"
-            class="w-full h-52 object-cover rounded-xl mb-3 cursor-pointer group-hover:scale-105 transition"
-          />
-          <div class="flex-1 flex flex-col">
-            <h3 class="font-bold text-lg mb-1 text-gray-800 truncate">{{ product.name }}</h3>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">{{ product.category }}</span>
-              <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">{{ product.size }}</span>
-              <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">{{ product.color }}</span>
-            </div>
-            <p class="text-gray-500 text-sm mb-2 line-clamp-2">{{ product.description }}</p>
-            <div class="flex items-center justify-between mt-auto">
-              <span class="text-blue-600 font-extrabold text-xl">₹{{ product.price }}</span>
-              <button
-                class="bg-blue-600 text-white px-4 py-1.5 rounded-lg shadow hover:bg-blue-700 transition"
-                @click="addToCart(product)"
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+		<!-- CATEGORY HIGHLIGHTS -->
+		<section class="w-full bg-gradient-to-br from-gray-50 to-white py-14">
+			<div
+				class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
+				<div
+					v-for="cat in categories"
+					:key="cat.title"
+					class="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col overflow-hidden group">
+					<q-img
+						:src="cat.image"
+						:alt="cat.title"
+						class="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+						style="border-radius: 1.5rem 1.5rem 0 0" />
+					<div class="p-6 flex-1 flex flex-col justify-between">
+						<div>
+							<div class="font-serif text-xl font-bold mb-1 text-gray-900">
+								{{ cat.title }}
+							</div>
+							<div class="text-gray-500 text-base mb-2">{{ cat.desc }}</div>
+						</div>
+						<q-btn
+							flat
+							color="primary"
+							:label="cat.cta"
+							class="px-0 mt-2 font-semibold"
+							@click="goToCategory(cat)" />
+					</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- Testimonials -->
-    <section class="max-w-7xl mx-auto px-4 mb-12">
-      <h2 class="text-3xl font-bold text-gray-800 mb-6">What Our Customers Say</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div
-          v-for="(t, idx) in testimonials"
-          :key="idx"
-          class="bg-white rounded-2xl shadow p-6 flex flex-col items-center text-center"
-        >
-          <img :src="t.avatar" :alt="t.name" class="w-16 h-16 rounded-full mb-3 object-cover" />
-          <div class="text-lg font-semibold text-gray-700 mb-1">{{ t.name }}</div>
-          <div class="text-yellow-400 text-xl mb-2">★★★★★</div>
-          <p class="text-gray-500">{{ t.text }}</p>
-        </div>
-      </div>
-    </section>
+		<!-- NEW ARRIVALS -->
+		<section class="w-full bg-white py-14">
+			<div class="max-w-7xl mx-auto px-4">
+				<div class="flex justify-between items-center mb-8">
+					<h2
+						class="text-2xl md:text-3xl font-serif font-bold tracking-wide text-gray-900">
+						Our New Arrivals
+					</h2>
+					<router-link
+						to="/shop"
+						class="text-xs text-primary font-semibold uppercase tracking-wider hover:underline"
+						>View All Products</router-link
+					>
+				</div>
+				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
+					<div
+						v-for="product in newArrivals"
+						:key="product.id"
+						class="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow group hover:shadow-xl transition flex flex-col overflow-hidden">
+						<q-img
+							:src="product.image"
+							:alt="product.title"
+							class="w-full h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+							style="border-radius: 1rem 1rem 0 0" />
+						<div class="p-5 flex-1 flex flex-col justify-between">
+							<div>
+								<div class="font-serif text-lg font-bold mb-1 text-gray-900">
+									{{ product.title }}
+								</div>
+								<div class="text-gray-500 text-sm mb-2">
+									{{ product.brand }}
+								</div>
+								<div class="flex items-center gap-2 mb-2">
+									<q-rating
+										:model-value="product.rating"
+										max="5"
+										size="18px"
+										color="amber"
+										readonly />
+									<span class="text-xs text-gray-400"
+										>({{ product.reviews }})</span
+									>
+								</div>
+							</div>
+							<div class="flex items-center justify-between mt-2">
+								<div class="font-bold text-lg text-primary">
+									${{ product.price }}
+								</div>
+								<div class="flex gap-2">
+									<q-btn
+										dense
+										round
+										flat
+										:icon="
+											wishlist.includes(product.id)
+												? 'favorite'
+												: 'favorite_border'
+										"
+										:color="wishlist.includes(product.id) ? 'pink' : 'grey-6'"
+										@click.stop="toggleWishlist(product.id)" />
+									<q-btn
+										dense
+										round
+										flat
+										icon="shopping_cart"
+										:color="cart.includes(product.id) ? 'primary' : 'grey-6'"
+										@click.stop="addToCart(product.id)" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- Newsletter Signup -->
-    <section class="max-w-2xl mx-auto px-4 mb-16">
-      <div class="bg-white rounded-2xl shadow p-8 flex flex-col items-center">
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">Get Exclusive Offers</h2>
-        <p class="text-gray-500 mb-4">Sign up for our newsletter and get 10% off your first order!</p>
-        <form @submit.prevent="subscribeNewsletter" class="flex w-full max-w-md gap-2">
-          <input
-            v-model="newsletterEmail"
-            type="email"
-            required
-            placeholder="Enter your email"
-            class="border border-gray-300 rounded-lg px-4 py-2 flex-1 focus:ring-2 focus:ring-blue-400 transition"
-          />
-          <button
-            type="submit"
-            class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-blue-700 transition"
-          >
-            Subscribe
-          </button>
-        </form>
-        <div v-if="newsletterMsg" class="mt-3 text-green-600 font-semibold">{{ newsletterMsg }}</div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-200 py-8">
-      <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <div class="text-xl font-bold mb-2">E-Commerce Outfits</div>
-          <div class="text-gray-400 text-sm">© 2025 All rights reserved.</div>
-        </div>
-        <div class="flex gap-6">
-          <router-link to="/" class="hover:text-white">Home</router-link>
-          <router-link to="/shop" class="hover:text-white">Shop</router-link>
-          <router-link to="/men" class="hover:text-white">Men</router-link>
-          <router-link to="/women" class="hover:text-white">Women</router-link>
-          <router-link to="/contact" class="hover:text-white">Contact</router-link>
-        </div>
-        <div class="flex gap-4">
-          <a href="#" class="hover:text-blue-400"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="hover:text-pink-400"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="hover:text-blue-300"><i class="fab fa-twitter"></i></a>
-        </div>
-      </div>
-    </footer>
-  </div>
+		<!-- PRODUCT DETAIL DIALOG -->
+		<q-dialog v-model="showDetail" persistent>
+			<ProductDetail
+				v-if="selectedProduct"
+				:product="selectedProduct"
+				@close="showDetail = false"
+				@add-to-cart="addToCart"
+				@toggle-wishlist="toggleWishlist"
+				:in-cart="cart.includes(selectedProduct?.id)"
+				:in-wishlist="wishlist.includes(selectedProduct?.id)" />
+		</q-dialog>
+	</q-page>
 </template>
 
 <script setup>
-import { ref } from "vue"
+	import { ref } from "vue";
+	import { useQuasar } from "quasar";
+	import { useRouter } from "vue-router";
+	import ProductDetail from "./shopproduct/ProductDetail.vue";
 
-// Featured Categories
-const featuredCategories = [
-  {
-    name: "Men",
-    image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=200&q=80",
-    link: "/men"
-  },
-  {
-    name: "Women",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
-    link: "/women"
-  },
-  {
-    name: "Accessories",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80",
-    link: "/shop"
-  },
-  {
-    name: "Shoes",
-    image: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=200&q=80",
-    link: "/shop"
-  }
-]
+	// Premium Dummy Data
+	const heroCollections = [
+		{
+			id: 1,
+			image:
+				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
+			title: "Soft Leather Jackets",
+			desc: "Experience the luxury of our new soft leather jackets, crafted for comfort and timeless style.",
+			tag: "Outerwear",
+			limited: true,
+		},
+		{
+			id: 2,
+			image:
+				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+			title: "Urban Trench Coats",
+			desc: "Step into the season with our urban trench coats, designed for elegance and versatility.",
+			tag: "Coats",
+			limited: false,
+		},
+		{
+			id: 3,
+			image:
+				"https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+			title: "Wool Blend Blazers",
+			desc: "Elevate your look with premium wool blend blazers, perfect for every occasion.",
+			tag: "Blazers",
+			limited: true,
+		},
+	];
 
-// Trending Products (dummy, you can expand)
-const trendingProducts = [
-  {
-    name: "Men's T-Shirt",
-    description: "Black cotton T-Shirt",
-    price: 799,
-    size: "M",
-    color: "Black",
-    category: "Men",
-    image: "https://via.placeholder.com/300x300?text=T-Shirt",
-  },
-  {
-    name: "Women's Dress",
-    description: "Floral summer dress",
-    price: 1499,
-    size: "M",
-    color: "Pink",
-    category: "Women",
-    image: "https://via.placeholder.com/300x300?text=Dress",
-  },
-  {
-    name: "Sneakers",
-    description: "Casual sneakers",
-    price: 1999,
-    size: "42",
-    color: "White",
-    category: "Men",
-    image: "https://via.placeholder.com/300x300?text=Shoes",
-  },
-  {
-    name: "Handbag",
-    description: "Leather handbag",
-    price: 2599,
-    size: "Medium",
-    color: "Brown",
-    category: "Women",
-    image: "https://via.placeholder.com/300x300?text=Bag",
-  },
-  {
-    name: "Smart Watch",
-    description: "Latest smartwatch",
-    price: 3499,
-    size: "One Size",
-    color: "Black",
-    category: "Accessories",
-    image: "https://via.placeholder.com/300x300?text=Watch",
-  },
-  {
-    name: "Perfume",
-    description: "Long-lasting fragrance",
-    price: 1399,
-    size: "100ml",
-    color: "N/A",
-    category: "Accessories",
-    image: "https://via.placeholder.com/300x300?text=Perfume",
-  },
-  {
-    name: "Women's Heels",
-    description: "Elegant black heels for parties.",
-    price: 1799,
-    size: "38",
-    color: "Black",
-    category: "Women",
-    image: "https://via.placeholder.com/300x300?text=Heels",
-  },
-  {
-    name: "Men's Jacket",
-    description: "Winter denim jacket",
-    price: 2499,
-    size: "L",
-    color: "Blue",
-    category: "Men",
-    image: "https://via.placeholder.com/300x300?text=Jacket",
-  }
-]
+	const features = [
+		{
+			icon: "event_available",
+			title: "Book An Appointment",
+			desc: "Personalized shopping experience with our style experts.",
+		},
+		{
+			icon: "storefront",
+			title: "Pick Up In Store",
+			desc: "Order online and collect your favorites at your convenience.",
+		},
+		{
+			icon: "redeem",
+			title: "Special Packaging",
+			desc: "Every order arrives in exclusive, eco-friendly packaging.",
+		},
+		{
+			icon: "autorenew",
+			title: "Free Global Returns",
+			desc: "Shop with confidence with our hassle-free return policy.",
+		},
+	];
 
-// Testimonials (dummy)
-const testimonials = [
-  {
-    name: "Ayesha Khan",
-    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-    text: "Amazing quality and fast delivery! I love shopping here."
-  },
-  {
-    name: "Ali Raza",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    text: "Great variety and best prices. Highly recommended!"
-  },
-  {
-    name: "Sara Malik",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    text: "Customer service is top-notch. Will shop again!"
-  }
-]
+	const categories = [
+		{
+			title: "Shop for Men",
+			desc: "Discover the latest in men's fashion, from casual to formal.",
+			image:
+				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
+			cta: "Shop for Men",
+		},
+		{
+			title: "Shop for Women",
+			desc: "Explore our women's collection for every mood and moment.",
+			image:
+				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+			cta: "Shop for Women",
+		},
+		{
+			title: "Shop Accessories",
+			desc: "Complete your look with our curated accessories.",
+			image:
+				"https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+			cta: "Shop Accessories",
+		},
+	];
 
-// Newsletter
-const newsletterEmail = ref("")
-const newsletterMsg = ref("")
+	const newArrivals = [
+		{
+			id: 101,
+			image:
+				"https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+			title: "Classic Men T-Shirt",
+			brand: "Nike",
+			price: 29.99,
+			rating: 4.5,
+			reviews: 120,
+		},
+		{
+			id: 102,
+			image:
+				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+			title: "Women Summer Dress",
+			brand: "Zara",
+			price: 49.99,
+			rating: 4.8,
+			reviews: 98,
+		},
+		{
+			id: 103,
+			image:
+				"https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+			title: "Kids Sneakers",
+			brand: "Adidas",
+			price: 39.99,
+			rating: 4.2,
+			reviews: 45,
+		},
+		{
+			id: 104,
+			image:
+				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
+			title: "Men Running Shoes",
+			brand: "Puma",
+			price: 89.99,
+			rating: 4.7,
+			reviews: 210,
+		},
+		{
+			id: 105,
+			image:
+				"https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80",
+			title: "Women Handbag",
+			brand: "H&M",
+			price: 59.99,
+			rating: 4.9,
+			reviews: 80,
+		},
+		{
+			id: 106,
+			image:
+				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+			title: "Levis Jeans",
+			brand: "Levis",
+			price: 69.99,
+			rating: 4.6,
+			reviews: 150,
+		},
+		{
+			id: 107,
+			image:
+				"https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
+			title: "Soft Leather Jacket",
+			brand: "Zara",
+			price: 99.99,
+			rating: 4.9,
+			reviews: 200,
+		},
+		{
+			id: 108,
+			image:
+				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80",
+			title: "Summer Top",
+			brand: "H&M",
+			price: 34.99,
+			rating: 4.3,
+			reviews: 60,
+		},
+	];
 
-function subscribeNewsletter() {
-  if (newsletterEmail.value) {
-    newsletterMsg.value = "Thank you for subscribing!"
-    newsletterEmail.value = ""
-    setTimeout(() => (newsletterMsg.value = ""), 3000)
-  }
-}
+	const cart = ref([]);
+	const wishlist = ref([]);
+	const showDetail = ref(false);
+	const selectedProduct = ref(null);
 
-// Cart logic (dummy, can be expanded)
-function addToCart(product) {
-  alert(`${product.name} added to cart!`)
-}
+	const $q = useQuasar();
+	const router = useRouter();
+
+	function addToCart(productId) {
+		if (!cart.value.includes(productId)) {
+			cart.value.push(productId);
+			$q.notify({ type: "positive", message: "Added to cart!" });
+		}
+	}
+	function toggleWishlist(productId) {
+		const idx = wishlist.value.indexOf(productId);
+		if (idx === -1) {
+			wishlist.value.push(productId);
+			$q.notify({ type: "info", message: "Added to wishlist!" });
+		} else {
+			wishlist.value.splice(idx, 1);
+			$q.notify({ type: "warning", message: "Removed from wishlist." });
+		}
+	}
+	function discover(item) {
+		$q.notify({ message: `Discover: ${item.title}` });
+	}
+	function goToCategory(cat) {
+		if (cat.title.toLowerCase().includes("men")) {
+			router.push("/men");
+		} else if (cat.title.toLowerCase().includes("women")) {
+			router.push("/women");
+		} else if (cat.title.toLowerCase().includes("accessories")) {
+			router.push("/accessories");
+		} else {
+			// fallback
+			router.push("/");
+		}
+	}
+	function goToCart() {
+		$q.notify({ message: "Go to cart page (not implemented)" });
+	}
+	function goToWishlist() {
+		$q.notify({ message: "Go to wishlist page (not implemented)" });
+	}
+	function goToProfile() {
+		$q.notify({ message: "Go to profile page (not implemented)" });
+	}
 </script>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+	.q-header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+	}
 </style>
