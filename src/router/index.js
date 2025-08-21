@@ -110,14 +110,60 @@ const routes = [
   // Seller routes
   {
     path: '/seller',
-    redirect: '/seller/dashboard',
-    meta: { requiresAuth: true, requiresRole: 'seller' }
-  },
-  {
-    path: '/seller/dashboard',
-    name: 'SellerDashboard',
-    component: () => import('@/views/seller/Dashboard.vue'),
-    meta: { requiresAuth: true, requiresRole: 'seller' }
+    component: () => import('@/layouts/SellerLayout.vue'),
+    meta: { requiresAuth: true, requiresRole: 'seller' },
+    children: [
+      {
+        path: '',
+        redirect: '/seller/dashboard'
+      },
+      {
+        path: 'dashboard',
+        name: 'SellerDashboard',
+        component: () => import('@/views/seller/SellerDashboard.vue')
+      },
+      {
+        path: 'products',
+        name: 'SellerProducts',
+        component: () => import('@/views/seller/Products.vue')
+      },
+      {
+        path: 'products/add',
+        name: 'AddProduct',
+        component: () => import('@/components/seller/ProductForm.vue')
+      },
+      {
+        path: 'products/edit/:id',
+        name: 'EditProduct',
+        component: () => import('@/components/seller/ProductForm.vue'),
+        props: true
+      },
+      {
+        path: 'orders',
+        name: 'SellerOrders',
+        component: () => import('@/views/seller/Orders.vue')
+      },
+      {
+        path: 'inventory',
+        name: 'SellerInventory',
+        component: () => import('@/components/seller/InventoryTable.vue')
+      },
+      {
+        path: 'revenue',
+        name: 'SellerRevenue',
+        component: () => import('@/views/seller/Revenue.vue')
+      },
+      {
+        path: 'analytics',
+        name: 'SellerAnalytics',
+        component: () => import('@/views/seller/Analytics.vue')
+      },
+      {
+        path: 'settings',
+        name: 'SellerSettings',
+        component: () => import('@/views/seller/Settings.vue')
+      }
+    ]
   },
 
   // Buyer routes
