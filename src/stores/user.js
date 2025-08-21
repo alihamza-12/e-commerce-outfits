@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import api from '@/services/api'
+import adminApi from '@/services/adminApi'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     users: [],
     sellers: [],
     customers: [],
+    adminCustomers: [],
     user: null,
     loading: false,
     pagination: {
@@ -18,9 +19,13 @@ export const useUserStore = defineStore('user', {
     async fetchUsers(params = {}) {
       this.loading = true
       try {
-        const response = await api.get('/users', { params })
-        this.users = response.data.users
-        return response.data
+        const response = await adminApi.getAdminCustomers(params)
+        if (response.success) {
+          this.users = response.data.customers || response.data
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
       } catch (error) {
         throw error
       } finally {
@@ -31,9 +36,13 @@ export const useUserStore = defineStore('user', {
     async fetchSellers(params = {}) {
       this.loading = true
       try {
-        const response = await api.get('/sellers', { params })
-        this.sellers = response.data.sellers
-        return response.data
+        const response = await adminApi.getAdminCustomers({ ...params, role: 'seller' })
+        if (response.success) {
+          this.sellers = response.data.customers || response.data
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
       } catch (error) {
         throw error
       } finally {
@@ -44,9 +53,13 @@ export const useUserStore = defineStore('user', {
     async fetchCustomers(params = {}) {
       this.loading = true
       try {
-        const response = await api.get('/customers', { params })
-        this.customers = response.data.customers
-        return response.data
+        const response = await adminApi.getAdminCustomers({ ...params, role: 'customer' })
+        if (response.success) {
+          this.customers = response.data.customers || response.data
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
       } catch (error) {
         throw error
       } finally {
@@ -56,7 +69,7 @@ export const useUserStore = defineStore('user', {
 
     async approveSeller(id) {
       try {
-        const response = await api.put(`/sellers/${id}/approve`)
+        const response = await adminApi.updateCustomerStatus(id, 'approved')
         return response.data
       } catch (error) {
         throw error
@@ -65,11 +78,70 @@ export const useUserStore = defineStore('user', {
 
     async rejectSeller(id, reason) {
       try {
-        const response = await api.put(`/sellers/${id}/reject`, { reason })
+        const response = await adminApi.updateCustomerStatus(id, 'rejected')
         return response.data
       } catch (error) {
         throw error
       }
     },
+
+    // Add new method for admin customers
+    async fetchAdminCustomers(params = {}) {
+      this.loading = true
+      try {
+        const response = await adminApi.getAdminCustomers(params)
+        if (response.success) {
+          this.adminCustomers = response.data.customers || response.data
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
+      } catch (error) {
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Block/Unblock user functionality
+    async updateUserStatus(userId, status) {
+      this.loading = true
+      try {
+        const response = await adminApi.updateCustomerStatus(userId, status)
+        if (response.success) {
+          // Update local state
+          const userIndex = this.adminCustomers.findIndex(user => user.id === userId)
+          if (userIndex !== -1) {
+            this.adminCustomers[userIndex].status = status
+          }
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
+      } catch (error) {
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // Fetch single user details
+    async fetchUserDetails(userId) {
+      try {
+        const response = await adminApi.getCustomerDetails(userId)
+        if (response.success) {
+          return response.data
+        } else {
+          throw new Error(response.message)
+        }
+      } catch (error) {
+        throw error
+      }
+    },
+
+    // Get users by status
+    async getUsersByStatus(status) {
+      return await this.fetchAdminCustomers({ status })
+    }
   },
 })
