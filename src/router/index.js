@@ -30,7 +30,7 @@ const routes = [
     path: '/contact',
     component: Contact,
   },
-    {
+  {
     path: '/kids',
     component: KidsFashion,
   },
@@ -121,58 +121,48 @@ const routes = [
   // Seller routes
   {
     path: '/seller',
-    component: () => import('@/layouts/SellerLayout.vue'),
+    component: () => import('@/views/seller/SellerLayout.vue'),
     meta: { requiresAuth: true, requiresRole: 'seller' },
     children: [
       {
-        path: '',
-        redirect: '/seller/dashboard'
-      },
-      {
         path: 'dashboard',
         name: 'SellerDashboard',
-        component: () => import('@/views/seller/SellerDashboard.vue')
+        component: () => import('@/views/seller/SellerDashboard.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
         path: 'products',
         name: 'SellerProducts',
-        component: () => import('@/views/seller/Products.vue')
+        component: () => import('@/views/seller/ProductForm.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
         path: 'products/add',
         name: 'AddProduct',
-        component: () => import('@/components/seller/ProductForm.vue')
-      },
-      {
-        path: 'products/edit/:id',
-        name: 'EditProduct',
-        component: () => import('@/components/seller/ProductForm.vue'),
-        props: true
+        component: () => import('@/views/seller/ProductForm.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
         path: 'orders',
-        name: 'SellerOrders',
-        component: () => import('@/views/seller/Orders.vue')
+        name: 'SellerOrdersPanel',
+        component: () => import('@/views/seller/OrderManagement.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
         path: 'inventory',
         name: 'SellerInventory',
-        component: () => import('@/components/seller/InventoryTable.vue')
-      },
-      {
-        path: 'revenue',
-        name: 'SellerRevenue',
-        component: () => import('@/views/seller/Revenue.vue')
-      },
-      {
-        path: 'analytics',
-        name: 'SellerAnalytics',
-        component: () => import('@/views/seller/Analytics.vue')
+        component: () => import('@/views/seller/InventoryTable.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
         path: 'settings',
         name: 'SellerSettings',
-        component: () => import('@/views/seller/Settings.vue')
+        component: () => import('@/views/seller/SellerStats.vue'),
+        meta: { requiresAuth: true, requiresRole: 'seller' }
+      },
+      {
+        path: 'profile',
+        component: () => import('@/views/seller/Profile.vue')
       }
     ]
   },
