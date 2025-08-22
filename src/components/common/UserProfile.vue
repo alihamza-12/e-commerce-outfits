@@ -19,17 +19,30 @@
 		<q-list>
 			<q-separator />
 
-			<!-- Back to Seller Dashboard Button -->
-			<q-item clickable v-close-popup @click="goToDashboard">
+			<!-- User Info Section -->
+			<q-item>
 				<q-item-section>
-					<q-item-label>Back to Seller Dashboard</q-item-label>
+					<q-item-label class="user-name">{{ user?.name || user?.email }}</q-item-label>
+					<q-item-label caption class="user-email">{{ user?.email }}</q-item-label>
+					<q-item-label caption class="user-role">Role: {{ user?.role }}</q-item-label>
+				</q-item-section>
+			</q-item>
+
+			<q-separator />
+
+			<!-- Dashboard Navigation based on role -->
+			<q-item clickable v-close-popup @click="goToDashboard" v-if="user?.role === 'seller' || user?.role === 'admin'">
+				<q-item-section>
+					<q-item-label>
+						{{ user?.role === 'admin' ? 'Admin Dashboard' : 'Seller Dashboard' }}
+					</q-item-label>
 				</q-item-section>
 				<q-item-section side="right" avatar>
 					<q-icon name="arrow_forward" color="primary" />
 				</q-item-section>
 			</q-item>
 
-			<q-separator />
+			<q-separator v-if="user?.role === 'seller' || user?.role === 'admin'" />
 
 			<q-item clickable v-close-popup @click="logout">
 				<q-item-section avatar>
@@ -81,9 +94,21 @@
 		router.push("/");
 	};
 
-	// Add this function for dashboard navigation
+	// Add this function for dashboard navigation based on user role
 	function goToDashboard() {
-		router.push("/seller/dashboard");
+		switch (user.value?.role) {
+			case 'admin':
+				router.push('/admin/dashboard');
+				break;
+			case 'seller':
+				router.push('/seller/dashboard');
+				break;
+			case 'buyer':
+				router.push('/');
+				break;
+			default:
+				router.push('/');
+		}
 	}
 </script>
 

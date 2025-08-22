@@ -23,22 +23,6 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login(credentials)
       
       if (response.success) {
-        // Check if user is a seller and not approved
-        if (response.user.role === 'seller' && !response.user.is_approved) {
-          return { 
-            success: false, 
-            message: 'Your seller account is pending approval. Please wait for admin approval before logging in.' 
-          }
-        }
-        
-        // Check if seller is blocked
-        if (response.user.role === 'seller' && response.user.is_blocked) {
-          return { 
-            success: false, 
-            message: 'Your seller account has been blocked. Please contact support for assistance.' 
-          }
-        }
-        
         user.value = response.user
         token.value = response.token
         isAuthenticated.value = true

@@ -246,6 +246,26 @@
       </q-card-actions>
     </q-card>
 
+    <!-- Confirmation Dialog -->
+    <q-dialog v-model="showConfirmDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center">
+          <q-avatar :icon="confirmIcon" :color="confirmColor" text-color="white" />
+          <span class="q-ml-sm">{{ confirmMessage }}</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn 
+            flat 
+            :label="confirmAction" 
+            :color="confirmColor" 
+            @click="confirmStatusChange" 
+            v-close-popup 
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Seller Details Dialog -->
     <q-dialog v-model="showSellerDetails" persistent>
@@ -446,6 +466,14 @@ const pagination = ref({
   rowsPerPage: itemsPerPage.value
 })
 
+// Confirmation dialog
+const confirmIcon = computed(() => 'check_circle')
+const confirmColor = computed(() => 'positive')
+const confirmMessage = computed(() => {
+  if (!selectedSeller.value) return ''
+  return `Are you sure you want to approve ${selectedSeller.value.businessName}?`
+})
+const confirmAction = computed(() => 'Approve')
 
 // Methods
 const fetchSellers = async () => {

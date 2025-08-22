@@ -1,11 +1,11 @@
 <template>
 	<q-layout view="hHh lpR fFf">
-		<!-- Navbar sirf tab dikhaye jab route seller panel ka na ho, aur na hi login/signup ho -->
-		<Navbar v-if="!isSellerRoute && !isAuthRoute" />
+		<!-- Navbar sirf tab dikhaye jab route seller panel ka na ho, aur na hi login/signup ho, aur na hi admin ho -->
+		<Navbar v-if="!isSellerRoute && !isAuthRoute && !isAdminRoute" />
 		<q-page-container>
 			<router-view :class="{ 'body--dark': $q.dark.isActive }" />
 		</q-page-container>
-		<Footer v-if="!isSellerRoute && !isAuthRoute" />
+		<Footer v-if="!isSellerRoute && !isAuthRoute && !isAdminRoute" />
 	</q-layout>
 </template>
 
