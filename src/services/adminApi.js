@@ -35,10 +35,12 @@ class AdminService {
     }
   }
 
-  // Update customer status
+  // Update customer status (block/unblock)
   async updateCustomerStatus(customerId, status) {
     try {
-      const response = await axios.put(`/admin/customers/${customerId}/status`, { status })
+      // Convert status to block parameter (true for blocked, false for active)
+      const block = status === 'blocked';
+      const response = await axios.patch(`/admin/customers/${customerId}/block?block=${block}`)
       return {
         success: true,
         data: response.data
@@ -140,9 +142,9 @@ class AdminService {
   }
 
   // Approve seller registration
-  async approveSeller(sellerId) {
+  async approveSeller(sellerId, approve = true) {
     try {
-      const response = await axios.put(`/admin/sellers/${sellerId}/approve`)
+      const response = await axios.patch(`/admin/sellers/${sellerId}/approve?approve=${approve}`)
       return {
         success: true,
         data: response.data
@@ -151,6 +153,23 @@ class AdminService {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to approve seller',
+        error: error
+      }
+    }
+  }
+
+  // Block/Unblock seller
+  async blockSeller(sellerId, block = true) {
+    try {
+      const response = await axios.patch(`/admin/sellers/${sellerId}/block?block=${block}`)
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update seller block status',
         error: error
       }
     }

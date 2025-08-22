@@ -201,6 +201,11 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  // Check and restore authentication state from localStorage
+  if (!authStore.isLoggedIn) {
+    authStore.checkAuth()
+  }
+
   // Allow home page to be accessed without any checks
   if (to.path === '/') {
     next()

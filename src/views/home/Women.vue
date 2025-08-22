@@ -297,7 +297,7 @@ const addToCart = (product) => {
     image: product.image,
     brand: product.category,
   })
-  alert(`${product.name} added to cart!`)
+  // alert(`${product.name} added to cart!`)
 }
 
 const toggleWishlist = (product) => {

@@ -195,19 +195,28 @@
                   flat
                 />
                 <q-btn
-                  @click="toggleSellerStatus(props.row)"
-                  :label="getStatusAction(props.row.status)"
-                  :color="getStatusActionColor(props.row.status)"
+                  v-if="!props.row.is_approved"
+                  @click="approveSeller(props.row)"
+                  label="Approve"
+                  color="positive"
                   size="sm"
                   unelevated
                 />
                 <q-btn
-                  @click="viewSellerProducts(props.row)"
-                  icon="inventory"
-                  color="info"
+                  v-if="props.row.is_approved"
+                  @click="unapproveSeller(props.row)"
+                  label="Unapprove"
+                  color="warning"
                   size="sm"
-                  round
-                  flat
+                  unelevated
+                />
+                <q-btn
+                  v-if="props.row.is_approved"
+                  @click="toggleBlockStatus(props.row)"
+                  :label="props.row.is_blocked ? 'Unblock' : 'Block'"
+                  :color="props.row.is_blocked ? 'positive' : 'negative'"
+                  size="sm"
+                  unelevated
                 />
               </div>
             </q-td>
@@ -237,26 +246,6 @@
       </q-card-actions>
     </q-card>
 
-    <!-- Confirmation Dialog -->
-    <q-dialog v-model="showConfirmDialog" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section class="row items-center">
-          <q-avatar :icon="confirmIcon" :color="confirmColor" text-color="white" />
-          <span class="q-ml-sm">{{ confirmMessage }}</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn 
-            flat 
-            :label="confirmAction" 
-            :color="confirmColor" 
-            @click="confirmStatusChange" 
-            v-close-popup 
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
 
     <!-- Seller Details Dialog -->
     <q-dialog v-model="showSellerDetails" persistent>
@@ -359,10 +348,8 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
 // Dialog states
-const showConfirmDialog = ref(false)
 const showSellerDetails = ref(false)
 const selectedSeller = ref(null)
-const newStatus = ref('')
 
 // Table columns
 const columns = [
@@ -459,24 +446,32 @@ const pagination = ref({
   rowsPerPage: itemsPerPage.value
 })
 
-// Confirmation dialog
-const confirmIcon = computed(() => newStatus.value === 'verified' ? 'check_circle' : 'block')
-const confirmColor = computed(() => newStatus.value === 'verified' ? 'positive' : 'negative')
-const confirmMessage = computed(() => {
-  if (!selectedSeller.value) return ''
-  return selectedSeller.value.status === 'pending'
-    ? `Are you sure you want to approve ${selectedSeller.value.businessName}?`
-    : `Are you sure you want to change status for ${selectedSeller.value.businessName}?`
-})
-const confirmAction = computed(() => selectedSeller.value?.status === 'pending' ? 'Approve' : 'Update')
 
 // Methods
 const fetchSellers = async () => {
   loading.value = true
   try {
     const response = await adminApi.getAdminSellers()
-    if (response.success) {
-      sellers.value = response.data.sellers || response.data
+    if (response.success && response.data) {
+      // Extract sellers from response.data.data and map fields
+      const apiSellers = response.data.data || []
+      sellers.value = apiSellers.map(seller => ({
+        id: seller.seller_id,
+        user_id: seller.user_id,
+        name: seller.name,
+        email: seller.email,
+        is_approved: seller.is_approved,
+        is_blocked: seller.is_blocked,
+        businessName: seller.profile?.company_name || seller.name || 'N/A',
+        phone: seller.profile?.phone || 'N/A',
+        businessType: 'N/A', // Not in API response, set default
+        productCount: 0, // Not in API response, set default
+        revenue: 0, // Not in API response, set default
+        status: getSellerStatus(seller.is_approved, seller.is_blocked),
+        createdAt: new Date().toISOString(), // Not in API response, set default
+        logo: null, // Not in API response, set default
+        profile: seller.profile || {}
+      }))
     } else {
       sellers.value = []
     }
@@ -493,6 +488,13 @@ const fetchSellers = async () => {
   }
 }
 
+// Helper function to determine seller status based on API flags
+const getSellerStatus = (isApproved, isBlocked) => {
+  if (isBlocked) return 'suspended'
+  if (isApproved) return 'verified'
+  return 'pending'
+}
+
 const refreshSellers = () => {
   currentPage.value = 1
   fetchSellers()
@@ -505,31 +507,124 @@ const viewSellerDetails = (seller) => {
 
 const toggleSellerStatus = (seller) => {
   selectedSeller.value = seller
-  newStatus.value = seller.status === 'pending' ? 'verified' : 'pending'
-  showConfirmDialog.value = true
+  
+  if (!seller.is_approved) {
+    // Seller is not approved - show approval dialog
+    newStatus.value = 'verified'
+    showConfirmDialog.value = true
+  } else {
+    // Seller is approved - toggle block/unblock
+    const newBlockStatus = !seller.is_blocked
+    blockUnblockSeller(seller, newBlockStatus)
+  }
 }
 
-const confirmStatusChange = async () => {
-  if (!selectedSeller.value) return
-  
+const blockUnblockSeller = async (seller, block) => {
   try {
-    await adminApi.updateSellerStatus(selectedSeller.value.id, newStatus.value)
+    const response = await adminApi.blockSeller(seller.id, block)
     
-    // Update local state
-    const sellerIndex = sellers.value.findIndex(s => s.id === selectedSeller.value.id)
-    if (sellerIndex !== -1) {
-      sellers.value[sellerIndex].status = newStatus.value
+    if (response.success) {
+      // Update local state
+      const sellerIndex = sellers.value.findIndex(s => s.id === seller.id)
+      if (sellerIndex !== -1) {
+        sellers.value[sellerIndex].is_blocked = block
+        sellers.value[sellerIndex].status = block ? 'suspended' : 'verified'
+      }
+      
+      $q.notify({
+        type: 'positive',
+        message: `Seller ${block ? 'blocked' : 'unblocked'} successfully`,
+        position: 'top'
+      })
     }
-    
-    $q.notify({
-      type: 'positive',
-      message: `Seller ${newStatus.value === 'verified' ? 'approved' : 'status updated'} successfully`,
-      position: 'top'
-    })
   } catch (error) {
     $q.notify({
       type: 'negative',
-      message: 'Failed to update seller status',
+      message: `Failed to ${block ? 'block' : 'unblock'} seller`,
+      position: 'top'
+    })
+  }
+}
+
+const approveSeller = async (seller) => {
+  try {
+    const response = await adminApi.approveSeller(seller.id, true)
+    
+    if (response.success) {
+      // Update local state
+      const sellerIndex = sellers.value.findIndex(s => s.id === seller.id)
+      if (sellerIndex !== -1) {
+        sellers.value[sellerIndex].is_approved = true
+        sellers.value[sellerIndex].status = 'verified'
+        sellers.value[sellerIndex].is_blocked = false
+      }
+      
+      $q.notify({
+        type: 'positive',
+        message: 'Seller approved successfully',
+        position: 'top'
+      })
+    }
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to approve seller',
+      position: 'top'
+    })
+  }
+}
+
+const unapproveSeller = async (seller) => {
+  try {
+    const response = await adminApi.approveSeller(seller.id, false)
+    
+    if (response.success) {
+      // Update local state
+      const sellerIndex = sellers.value.findIndex(s => s.id === seller.id)
+      if (sellerIndex !== -1) {
+        sellers.value[sellerIndex].is_approved = false
+        sellers.value[sellerIndex].status = 'pending'
+        sellers.value[sellerIndex].is_blocked = false
+      }
+      
+      $q.notify({
+        type: 'positive',
+        message: 'Seller unapproved successfully',
+        position: 'top'
+      })
+    }
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: 'Failed to unapprove seller',
+      position: 'top'
+    })
+  }
+}
+
+const toggleBlockStatus = async (seller) => {
+  const newBlockStatus = !seller.is_blocked
+  try {
+    const response = await adminApi.blockSeller(seller.id, newBlockStatus)
+    
+    if (response.success) {
+      // Update local state
+      const sellerIndex = sellers.value.findIndex(s => s.id === seller.id)
+      if (sellerIndex !== -1) {
+        sellers.value[sellerIndex].is_blocked = newBlockStatus
+        sellers.value[sellerIndex].status = newBlockStatus ? 'suspended' : 'verified'
+      }
+      
+      $q.notify({
+        type: 'positive',
+        message: `Seller ${newBlockStatus ? 'blocked' : 'unblocked'} successfully`,
+        position: 'top'
+      })
+    }
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: `Failed to ${newBlockStatus ? 'block' : 'unblock'} seller`,
       position: 'top'
     })
   }
@@ -550,12 +645,20 @@ const getStatusColor = (status) => {
   return colors[status] || 'grey'
 }
 
-const getStatusAction = (status) => {
-  return status === 'pending' ? 'Approve' : 'Suspend'
+const getStatusAction = (seller) => {
+  if (!seller.is_approved) {
+    return 'Approve'
+  } else {
+    return seller.is_blocked ? 'Unblock' : 'Block'
+  }
 }
 
-const getStatusActionColor = (status) => {
-  return status === 'pending' ? 'positive' : 'negative'
+const getStatusActionColor = (seller) => {
+  if (!seller.is_approved) {
+    return 'positive'
+  } else {
+    return seller.is_blocked ? 'positive' : 'negative'
+  }
 }
 
 const formatCurrency = (amount) => {
