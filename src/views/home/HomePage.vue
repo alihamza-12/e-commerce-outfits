@@ -327,7 +327,7 @@
 			quantity: 1
 		}
 		cartStore.addToCart(cartProduct)
-		alert(`${product.name} added to cart!`)
+		// alert(`${product.name} added to cart!`)
 	}
 </script>
 

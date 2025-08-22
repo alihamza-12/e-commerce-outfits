@@ -266,14 +266,50 @@
               <q-list dense>
                 <q-item>
                   <q-item-section>
-                    <q-item-label caption>Phone</q-item-label>
-                    <q-item-label>{{ selectedUser?.phone || 'N/A' }}</q-item-label>
+                    <q-item-label caption>Customer ID</q-item-label>
+                    <q-item-label>{{ selectedUser?.customer_id || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
                   <q-item-section>
-                    <q-item-label caption>Role</q-item-label>
-                    <q-item-label>{{ selectedUser?.role }}</q-item-label>
+                    <q-item-label caption>User ID</q-item-label>
+                    <q-item-label>{{ selectedUser?.user_id || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>Phone</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.phone || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>Address</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.address || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>City</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.city || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>State</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.state || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>Postal Code</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.postal_code || 'N/A' }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>Country</q-item-label>
+                    <q-item-label>{{ selectedUser?.profile?.country || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
@@ -292,8 +328,8 @@
                 </q-item>
                 <q-item>
                   <q-item-section>
-                    <q-item-label caption>Joined</q-item-label>
-                    <q-item-label>{{ formatDate(selectedUser?.createdAt) }}</q-item-label>
+                    <q-item-label caption>Blocked Status</q-item-label>
+                    <q-item-label>{{ selectedUser?.is_blocked ? 'Yes' : 'No' }}</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
@@ -336,12 +372,13 @@ const newStatus = ref('')
 // Table columns
 const columns = [
   { name: 'avatar', label: 'Avatar', field: 'avatar', align: 'center' },
+  { name: 'customer_id', label: 'Customer ID', field: 'customer_id', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
   { name: 'email', label: 'Email', field: 'email', align: 'left', sortable: true },
-  { name: 'phone', label: 'Phone', field: 'phone', align: 'left' },
-  { name: 'role', label: 'Role', field: 'role', align: 'center', sortable: true },
+  { name: 'phone', label: 'Phone', field: row => row.profile?.phone || 'N/A', align: 'left' },
+  { name: 'address', label: 'Address', field: row => row.profile?.address || 'N/A', align: 'left' },
+  { name: 'city', label: 'City', field: row => row.profile?.city || 'N/A', align: 'left' },
   { name: 'status', label: 'Status', field: 'status', align: 'center', sortable: true },
-  { name: 'createdAt', label: 'Joined', field: 'createdAt', align: 'center', sortable: true },
   { name: 'actions', label: 'Actions', align: 'center' }
 ]
 
@@ -378,13 +415,17 @@ const recentUsers = computed(() => {
 const filteredUsers = computed(() => {
   let filtered = users.value
 
-  // Search filter
+  // Search filter - include profile fields in search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(user => 
       user.name?.toLowerCase().includes(query) ||
       user.email?.toLowerCase().includes(query) ||
-      user.phone?.toLowerCase().includes(query)
+      user.customer_id?.toString().includes(query) ||
+      user.profile?.phone?.toLowerCase().includes(query) ||
+      user.profile?.address?.toLowerCase().includes(query) ||
+      user.profile?.city?.toLowerCase().includes(query) ||
+      user.profile?.state?.toLowerCase().includes(query)
     )
   }
 
@@ -440,18 +481,27 @@ const fetchUsers = async () => {
   loading.value = true
   try {
     const response = await userStore.fetchAdminCustomers()
-    // Ensure we always get an array
+    let usersData = []
+    
+    // Handle different response formats and extract the users array
     if (Array.isArray(response)) {
-      users.value = response
+      usersData = response
     } else if (response && Array.isArray(response.customers)) {
-      users.value = response.customers
+      usersData = response.customers
     } else if (response && response.data && Array.isArray(response.data.customers)) {
-      users.value = response.data.customers
+      usersData = response.data.customers
     } else if (response && response.data && Array.isArray(response.data)) {
-      users.value = response.data
-    } else {
-      users.value = []
+      usersData = response.data
     }
+    
+    // Transform API data to match table structure
+    users.value = usersData.map(user => ({
+      ...user,
+      id: user.customer_id || user.id, // Map customer_id to id for table operations
+      status: user.is_blocked ? 'blocked' : 'active', // Convert boolean to status string
+      phone: user.profile?.phone || 'N/A',
+      // Keep all original fields including profile data
+    }))
   } catch (error) {
     console.error('Error fetching users:', error)
     users.value = []
@@ -480,23 +530,30 @@ const confirmStatusChange = async () => {
   if (!selectedUser.value) return
   
   try {
-    await userStore.updateUserStatus(selectedUser.value.id, newStatus.value)
+    const result = await userStore.updateUserStatus(selectedUser.value.id, newStatus.value)
     
-    // Update local state
-    const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id)
-    if (userIndex !== -1) {
-      users.value[userIndex].status = newStatus.value
+    if (result && result.success !== false) {
+      // Update local state
+      const userIndex = users.value.findIndex(u => u.id === selectedUser.value.id)
+      if (userIndex !== -1) {
+        users.value[userIndex].status = newStatus.value
+        // Also update is_blocked field to match the new status
+        users.value[userIndex].is_blocked = newStatus.value === 'blocked'
+      }
+      
+      $q.notify({
+        type: 'positive',
+        message: `User ${newStatus.value === 'active' ? 'unblocked' : 'blocked'} successfully`,
+        position: 'top'
+      })
+    } else {
+      throw new Error(result?.message || 'Failed to update user status')
     }
-    
-    $q.notify({
-      type: 'positive',
-      message: `User ${newStatus.value === 'active' ? 'unblocked' : 'blocked'} successfully`,
-      position: 'top'
-    })
   } catch (error) {
+    console.error('Error updating user status:', error)
     $q.notify({
       type: 'negative',
-      message: 'Failed to update user status',
+      message: error.message || 'Failed to update user status',
       position: 'top'
     })
   }

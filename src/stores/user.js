@@ -109,11 +109,17 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await adminApi.updateCustomerStatus(userId, status)
         if (response.success) {
-          // Update local state
-          const userIndex = this.adminCustomers.findIndex(user => user.id === userId)
-          if (userIndex !== -1) {
-            this.adminCustomers[userIndex].status = status
+          // Update local state if adminCustomers is an array
+          if (Array.isArray(this.adminCustomers)) {
+            const userIndex = this.adminCustomers.findIndex(user => user.id === userId)
+            if (userIndex !== -1) {
+              this.adminCustomers[userIndex].status = status
+            }
           }
+          
+          // Refresh customer data after status update
+          await this.fetchAdminCustomers()
+          
           return response.data
         } else {
           throw new Error(response.message)
