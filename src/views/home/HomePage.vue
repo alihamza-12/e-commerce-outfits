@@ -312,9 +312,22 @@
 		}
 	}
 
-	// Cart logic (dummy, can be expanded)
+	import { useCartStore } from '../../stores/cart'
+	const cartStore = useCartStore()
+
+	// Cart logic
 	function addToCart(product) {
-		alert(`${product.name} added to cart!`);
+		// Ensure product has all required fields
+		const cartProduct = {
+			id: product.name.toLowerCase().replace(/\s+/g, '-'), // Generate simple ID from name
+			title: product.name,
+			price: product.price,
+			image: product.image,
+			brand: product.category,
+			quantity: 1
+		}
+		cartStore.addToCart(cartProduct)
+		alert(`${product.name} added to cart!`)
 	}
 </script>
 

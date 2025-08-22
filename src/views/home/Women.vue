@@ -141,7 +141,12 @@
 
 <script setup>
 import { ref, computed } from "vue"
+import { useCartStore } from "../../stores/cart"
 
+
+const cartStore = useCartStore() // ✅ Pinia store
+
+// product list
 const products = ref([
   {
     name: "Floral Dress",
@@ -264,52 +269,35 @@ const sortBy = ref("")
 const searchQuery = ref("")
 
 const wishlist = ref([])
-const cart = ref([])
 const selectedProduct = ref(null)
 
 const filteredProducts = computed(() => {
   let result = [...products.value]
-
-  // Search
   if (searchQuery.value) {
     result = result.filter((p) =>
       p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       p.category.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
-
-  // Category filter
-  if (selectedCategory.value) {
-    result = result.filter((p) => p.category === selectedCategory.value)
-  }
-
-  // Size filter
-  if (selectedSize.value) {
-    result = result.filter((p) => p.size === selectedSize.value)
-  }
-
-  // Color filter
-  if (selectedColor.value) {
-    result = result.filter((p) => p.color === selectedColor.value)
-  }
-
-  // Sort
-  if (sortBy.value === "low") {
-    result.sort((a, b) => a.price - b.price)
-  } else if (sortBy.value === "high") {
-    result.sort((a, b) => b.price - a.price)
-  } else if (sortBy.value === "new") {
-    result = result.reverse() // dummy: latest at end
-  }
-
+  if (selectedCategory.value) result = result.filter((p) => p.category === selectedCategory.value)
+  if (selectedSize.value) result = result.filter((p) => p.size === selectedSize.value)
+  if (selectedColor.value) result = result.filter((p) => p.color === selectedColor.value)
+  if (sortBy.value === "low") result.sort((a, b) => a.price - b.price)
+  else if (sortBy.value === "high") result.sort((a, b) => b.price - a.price)
+  else if (sortBy.value === "new") result = result.reverse()
   return result
 })
 
+// ✅ Cart goes through Pinia
 const addToCart = (product) => {
-  if (!cart.value.includes(product)) {
-    cart.value.push(product)
-    alert(`${product.name} added to cart!`)
-  }
+  cartStore.addToCart({
+    id: product.name, // ideally a real unique id
+    title: product.name,
+    price: product.price,
+    image: product.image,
+    brand: product.category,
+  })
+  alert(`${product.name} added to cart!`)
 }
 
 const toggleWishlist = (product) => {
@@ -320,14 +308,8 @@ const toggleWishlist = (product) => {
   }
 }
 
-const openProduct = (product) => {
-  selectedProduct.value = product
-}
-
-const clearSearch = () => {
-  searchQuery.value = ""
-}
-
+const openProduct = (product) => { selectedProduct.value = product }
+const clearSearch = () => { searchQuery.value = "" }
 const resetFilters = () => {
   selectedCategory.value = ""
   selectedSize.value = ""
@@ -342,12 +324,8 @@ const resetFilters = () => {
   @apply border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-pink-400 transition shadow-sm;
   min-width: 150px;
 }
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.2s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
