@@ -178,174 +178,169 @@
 </template>
 
 <script setup>
-	import { ref, computed } from "vue";
+import { ref, computed } from "vue";
+import { useCartStore } from "../../stores/cart";
 
-	const products = ref([
-		{
-			name: "T-Shirt",
-			description: "Black cotton T-Shirt",
-			price: 799,
-			size: "M",
-			color: "Black",
-			category: "Shirts",
-			image:
-				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Jacket",
-			description: "Winter denim jacket",
-			price: 2499,
-			size: "L",
-			color: "Blue",
-			category: "Jackets",
-			image:
-				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Sneakers",
-			description: "Casual white sneakers",
-			price: 1999,
-			size: "42",
-			color: "White",
-			category: "Shoes",
-			image:
-				"https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Formal Shirt",
-			description: "Slim fit formal shirt",
-			price: 1199,
-			size: "M",
-			color: "White",
-			category: "Shirts",
-			image:
-				"https://images.unsplash.com/photo-1526178613658-3f1622045557?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Jeans",
-			description: "Blue stretchable jeans",
-			price: 1599,
-			size: "32",
-			color: "Blue",
-			category: "Jeans",
-			image:
-				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Perfume",
-			description: "Long-lasting leather fragrance for men.",
-			price: 1399,
-			size: "100ml",
-			color: "N/A",
-			category: "Perfume",
-			image:
-				"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Sports Shoes",
-			description: "Best for running and sports activities.",
-			price: 2299,
-			size: "43",
-			color: "Black",
-			category: "Shoes",
-			image:
-				"https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
-		},
-		{
-			name: "Casual Jeans",
-			description: "Casual jeans for everyday style.",
-			price: 1449,
-			size: "34",
-			color: "Blue",
-			category: "Jeans",
-			image:
-				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
-		},
-	]);
+const cartStore = useCartStore(); // ✅ define the store
 
-	const categories = ["Shirts", "Jackets", "Shoes", "Jeans", "Perfume"];
-	const sizes = ["M", "L", "32", "34", "42", "43", "100ml"];
-	const colors = ["Black", "Blue", "White", "N/A"];
+const products = ref([
+  {
+    name: "T-Shirt",
+    description: "Black cotton T-Shirt",
+    price: 799,
+    size: "M",
+    color: "Black",
+    category: "Shirts",
+    image:
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Jacket",
+    description: "Winter denim jacket",
+    price: 2499,
+    size: "L",
+    color: "Blue",
+    category: "Jackets",
+    image:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Sneakers",
+    description: "Casual white sneakers",
+    price: 1999,
+    size: "42",
+    color: "White",
+    category: "Shoes",
+    image:
+      "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Formal Shirt",
+    description: "Slim fit formal shirt",
+    price: 1199,
+    size: "M",
+    color: "White",
+    category: "Shirts",
+    image:
+      "https://images.unsplash.com/photo-1526178613658-3f1622045557?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Jeans",
+    description: "Blue stretchable jeans",
+    price: 1599,
+    size: "32",
+    color: "Blue",
+    category: "Jeans",
+    image:
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Perfume",
+    description: "Long-lasting leather fragrance for men.",
+    price: 1399,
+    size: "100ml",
+    color: "N/A",
+    category: "Perfume",
+    image:
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Sports Shoes",
+    description: "Best for running and sports activities.",
+    price: 2299,
+    size: "43",
+    color: "Black",
+    category: "Shoes",
+    image:
+      "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    name: "Casual Jeans",
+    description: "Casual jeans for everyday style.",
+    price: 1449,
+    size: "34",
+    color: "Blue",
+    category: "Jeans",
+    image:
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80",
+  },
+]);
 
-	const selectedCategory = ref("");
-	const selectedSize = ref("");
-	const selectedColor = ref("");
-	const sortBy = ref("");
-	const searchQuery = ref("");
+const categories = ["Shirts", "Jackets", "Shoes", "Jeans", "Perfume"];
+const sizes = ["M", "L", "32", "34", "42", "43", "100ml"];
+const colors = ["Black", "Blue", "White", "N/A"];
 
-	const wishlist = ref([]);
-	const cart = ref([]);
-	const selectedProduct = ref(null);
+const selectedCategory = ref("");
+const selectedSize = ref("");
+const selectedColor = ref("");
+const sortBy = ref("");
+const searchQuery = ref("");
 
-	const filteredProducts = computed(() => {
-		let result = [...products.value];
+const wishlist = ref([]);
+const selectedProduct = ref(null);
 
-		// Search
-		if (searchQuery.value) {
-			result = result.filter(
-				(p) =>
-					p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-					p.category.toLowerCase().includes(searchQuery.value.toLowerCase())
-			);
-		}
+const filteredProducts = computed(() => {
+  let result = [...products.value];
 
-		// Category filter
-		if (selectedCategory.value) {
-			result = result.filter((p) => p.category === selectedCategory.value);
-		}
+  if (searchQuery.value) {
+    result = result.filter(
+      (p) =>
+        p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
 
-		// Size filter
-		if (selectedSize.value) {
-			result = result.filter((p) => p.size === selectedSize.value);
-		}
+  if (selectedCategory.value) {
+    result = result.filter((p) => p.category === selectedCategory.value);
+  }
+  if (selectedSize.value) {
+    result = result.filter((p) => p.size === selectedSize.value);
+  }
+  if (selectedColor.value) {
+    result = result.filter((p) => p.color === selectedColor.value);
+  }
 
-		// Color filter
-		if (selectedColor.value) {
-			result = result.filter((p) => p.color === selectedColor.value);
-		}
+  if (sortBy.value === "low") result.sort((a, b) => a.price - b.price);
+  else if (sortBy.value === "high") result.sort((a, b) => b.price - a.price);
+  else if (sortBy.value === "new") result = result.reverse();
 
-		// Sort
-		if (sortBy.value === "low") {
-			result.sort((a, b) => a.price - b.price);
-		} else if (sortBy.value === "high") {
-			result.sort((a, b) => b.price - a.price);
-		} else if (sortBy.value === "new") {
-			result = result.reverse(); // dummy: latest at end
-		}
+  return result;
+});
 
-		return result;
-	});
+const addToCart = (product) => {
+  cartStore.addToCart({
+    id: product.name, // fallback ID
+    title: product.name,
+    price: product.price,
+    image: product.image,
+    brand: product.category,
+  });
+  alert(`${product.name} added to cart!`);
+};
 
-	const addToCart = (product) => {
-		if (!cart.value.includes(product)) {
-			cart.value.push(product);
-			alert(`${product.name} added to cart!`);
-		}
-	};
+const toggleWishlist = (product) => {
+  if (wishlist.value.includes(product)) {
+    wishlist.value = wishlist.value.filter((p) => p !== product);
+  } else {
+    wishlist.value.push(product);
+  }
+};
 
-	const toggleWishlist = (product) => {
-		if (wishlist.value.includes(product)) {
-			wishlist.value = wishlist.value.filter((p) => p !== product);
-		} else {
-			wishlist.value.push(product);
-		}
-	};
+const openProduct = (product) => {
+  selectedProduct.value = product;
+};
 
-	const openProduct = (product) => {
-		selectedProduct.value = product;
-	};
+const clearSearch = () => {
+  searchQuery.value = "";
+};
 
-	const clearSearch = () => {
-		searchQuery.value = "";
-	};
-
-	const resetFilters = () => {
-		selectedCategory.value = "";
-		selectedSize.value = "";
-		selectedColor.value = "";
-		sortBy.value = "";
-		searchQuery.value = "";
-	};
+const resetFilters = () => {
+  selectedCategory.value = "";
+  selectedSize.value = "";
+  selectedColor.value = "";
+  sortBy.value = "";
+  searchQuery.value = "";
+};
 </script>
 
 <style scoped>

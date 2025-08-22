@@ -35,8 +35,12 @@
 			<!-- Right Side Icons -->
 			<div class="row items-center q-gutter-sm desktop-icons">
 				<q-btn flat round dense icon="search" class="icon-btn search-anim" @click="showSearchBar" />
-				<q-btn flat round dense icon="shopping_cart" class="icon-btn cart-anim"
-					:class="{ 'spin-once': cartSpinning }" />
+              <q-btn flat round dense icon="shopping_cart" class="icon-btn cart-anim relative"
+                    :class="{ 'spin-once': cartSpinning }" @click="showCartModal = true">
+                <q-badge v-if="cartStore.totalItems > 0" color="red" floating class="cart-badge">
+                  {{ cartStore.totalItems }}
+                </q-badge>
+              </q-btn>
 
 				<!-- Show UserProfile when logged in, auth buttons when logged out -->
 				<UserProfile v-if="isLoggedIn" />
@@ -73,12 +77,14 @@
 						<q-item-section>Search</q-item-section>
 					</q-item>
 
-					<q-item clickable class="drawer-link" @click="drawer = false">
+					<q-item clickable class="drawer-link" @click="showCartModal = true; drawer = false">
 						<q-item-section avatar>
 							<q-icon name="shopping_cart" />
 						</q-item-section>
-						<q-item-section>Cart</q-item-section>
-						<q-badge color="red" class="q-ml-sm">3</q-badge>
+                  <q-item-section>Cart</q-item-section>
+                  <q-badge v-if="cartStore.totalItems > 0" color="red" class="q-ml-sm">
+                    {{ cartStore.totalItems }}
+                  </q-badge>
 					</q-item>
 
 					<template v-if="isLoggedIn">
@@ -95,19 +101,30 @@
 				</q-list>
 			</q-scroll-area>
 		</q-drawer>
+
+		<!-- Cart Modal -->
+		<CartModal v-model="showCartModal" />
 	</q-header>
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from "vue";
+import { useQuasar } from "quasar";
 import { useAuthStore } from '../stores/auth';
+import { useCartStore } from '../stores/cart';
 import UserProfile from './common/UserProfile.vue';
+import CartModal from './CartModal.vue';
+
+const $q = useQuasar();
+
+const cartStore = useCartStore();
 
 const authStore = useAuthStore();
 const drawer = ref(false);
 const showSearch = ref(false);
 const searchQuery = ref("");
 const cartSpinning = ref(false);
+const showCartModal = ref(false);
 
 const isLoggedIn = computed(() => authStore.isAuthenticated);
 
@@ -144,8 +161,12 @@ function hideSearch() {
 }
 
 function submitSearch() {
-	// You can handle your search logic here
-	showSearch.value = false;
+  // You can handle your search logic here
+  showSearch.value = false;
+}
+
+function goToCart() {
+  $q.notify({ message: "Go to cart page (not implemented)" });
 }
 </script>
 
