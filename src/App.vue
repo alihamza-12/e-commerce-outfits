@@ -1,14 +1,11 @@
 <template>
 	<q-layout view="hHh lpR fFf">
-		<!-- Only show Navbar for non-admin and non-auth routes -->
-		<Navbar v-if="!isAdminRoute && !isAuthRoute" />
-
+		<!-- Navbar sirf tab dikhaye jab route seller panel ka na ho, aur na hi login/signup ho -->
+		<Navbar v-if="!isSellerRoute && !isAuthRoute" />
 		<q-page-container>
 			<router-view :class="{ 'body--dark': $q.dark.isActive }" />
 		</q-page-container>
-
-		<!-- Only show Footer for non-admin and non-auth routes -->
-		<Footer v-if="!isAdminRoute && !isAuthRoute" />
+		<Footer v-if="!isSellerRoute && !isAuthRoute" />
 	</q-layout>
 </template>
 
@@ -31,6 +28,12 @@
 	const isAuthRoute = computed(() => {
 		return ["/registeruser", "/loginuser"].includes(route.path);
 	});
+
+	// Hide footer on seller routes
+	const hideFooter = computed(() => route.path.startsWith("/seller"));
+
+	// Seller route check
+	const isSellerRoute = computed(() => route.path.startsWith("/seller"));
 </script>
 
 <style>

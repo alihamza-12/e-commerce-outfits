@@ -147,7 +147,7 @@
 					<div class="register-bottom">
 						<span>Already a member?</span>
 						<router-link to="/loginuser" class="register-link"
-							>Sign in</router-link
+							>Login</router-link
 						>
 					</div>
 				</form>

@@ -44,50 +44,50 @@ class AuthService {
     }
   }
 
-  // Get user profile
-  async getProfile() {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/auth/profile`)
-      return {
-        success: true,
-        user: response.data.user
-      }
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to get profile'
-      }
-    }
-  }
+  // // Get user profile
+  // async getProfile() {
+  //   try {
+  //     const response = await axios.get(`${API_BASE_URL}/auth/profile`)
+  //     return {
+  //       success: true,
+  //       user: response.data.user
+  //     }
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || 'Failed to get profile'
+  //     }
+  //   }
+  // }
 
   // Update profile
-  async updateProfile(userData) {
-    try {
-      const response = await axios.put(`${API_BASE_URL}/auth/profile`, userData)
-      return {
-        success: true,
-        user: response.data.user
-      }
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to update profile'
-      }
-    }
-  }
+  // async updateProfile(userData) {
+  //   try {
+  //     const response = await axios.put(`${API_BASE_URL}/auth/profile`, userData)
+  //     return {
+  //       success: true,
+  //       user: response.data.user
+  //     }
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || 'Failed to update profile'
+  //     }
+  //   }
+  // }
 
   // Logout endpoint
-  async logout() {
-    try {
-      await axios.post(`${API_BASE_URL}/auth/logout`)
-      return { success: true }
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Logout failed'
-      }
-    }
-  }
+  // async logout() {
+  //   try {
+  //     await axios.post(`${API_BASE_URL}/auth/logout`)
+  //     return { success: true }
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || 'Logout failed'
+  //     }
+  //   }
+  // }
 
   // Refresh token
   async refreshToken() {

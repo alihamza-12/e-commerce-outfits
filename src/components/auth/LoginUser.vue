@@ -113,24 +113,28 @@
 			// Use auth store for unified login
 			const response = await authStore.login({
 				email: email.value,
-				password: password.value
+				password: password.value,
 			});
-			
+
 			if (response.success) {
+				// Store user details in localStorage
+				localStorage.setItem("userName", response.user.name);
+				localStorage.setItem("userRole", response.user.role);
+
 				// Redirect based on role from auth store
 				const role = authStore.role;
-				switch(role) {
-					case 'admin':
-						router.push('/admin/dashboard');
+				switch (role) {
+					case "admin":
+						router.push("/admin/dashboard");
 						break;
-					case 'seller':
-						router.push('/seller/dashboard');
+					case "seller":
+						router.push("/seller/dashboard");
 						break;
-					case 'buyer':
-						router.push('/');
+					case "buyer":
+						router.push("/");
 						break;
 					default:
-						router.push('/');
+						router.push("/");
 				}
 			} else {
 				alert(response.message || "Invalid credentials. Please try again.");
