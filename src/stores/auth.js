@@ -1,123 +1,91 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import authApi from '@/services/authApi'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
   const user = ref(null)
   const token = ref(null)
   const isAuthenticated = ref(false)
-
-  // Admin credentials (hardcoded as requested)
-  const ADMIN_CREDENTIALS = {
-    email: 'admin@outfits.com',
-    password: 'admin123',
-    role: 'admin',
-    name: 'Admin User'
-  }
+  const loading = ref(false)
 
   // Getters
   const currentUser = computed(() => user.value)
   const userRole = computed(() => user.value?.role || null)
-  const role = computed(() => user.value?.role || null) // Add role getter for router compatibility
+  const role = computed(() => user.value?.role || null)
   const isLoggedIn = computed(() => isAuthenticated.value)
+  const isLoading = computed(() => loading.value)
 
   // Actions
   const login = async (credentials) => {
+    loading.value = true
     try {
-      // Check if it's admin login
-      if (credentials.email === ADMIN_CREDENTIALS.email && 
-          credentials.password === ADMIN_CREDENTIALS.password) {
-        
-        const adminUser = {
-          id: 'admin-001',
-          email: ADMIN_CREDENTIALS.email,
-          name: ADMIN_CREDENTIALS.name,
-          role: ADMIN_CREDENTIALS.role,
-          createdAt: new Date().toISOString()
-        }
-        
-        user.value = adminUser
-        token.value = 'admin-token-' + Date.now()
+      const response = await authApi.login(credentials)
+      
+      if (response.success) {
+        user.value = response.user
+        token.value = response.token
         isAuthenticated.value = true
         
         // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(adminUser))
-        localStorage.setItem('token', token.value)
-        localStorage.setItem('role', adminUser.role)
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('token', response.token)
+        localStorage.setItem('role', response.user.role)
         
-        return { success: true, user: adminUser }
+        return { success: true, user: response.user }
       }
       
-      // Check regular users from localStorage
-      const users = JSON.parse(localStorage.getItem('users') || '[]')
-      const foundUser = users.find(u => 
-        u.email === credentials.email && u.password === credentials.password
-      )
-      
-      if (foundUser) {
-        const userData = {
-          id: foundUser.id,
-          email: foundUser.email,
-          name: foundUser.name,
-          role: foundUser.role,
-          createdAt: foundUser.createdAt
-        }
-        
-        user.value = userData
-        token.value = 'user-token-' + Date.now()
-        isAuthenticated.value = true
-        
-        // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(userData))
-        localStorage.setItem('token', token.value)
-        localStorage.setItem('role', userData.role)
-        
-        return { success: true, user: userData }
-      }
-      
-      return { success: false, message: 'Invalid credentials' }
+      return { success: false, message: response.message }
       
     } catch (error) {
-      return { success: false, message: error.message }
+      return { success: false, message: error.message || 'Login failed' }
+    } finally {
+      loading.value = false
     }
   }
 
   const register = async (userData) => {
+    loading.value = true
     try {
-      const users = JSON.parse(localStorage.getItem('users') || '[]')
+      const response = await authApi.register(userData)
       
-      // Check if email already exists
-      if (users.some(u => u.email === userData.email)) {
-        return { success: false, message: 'Email already registered' }
+      if (response.success) {
+        // Auto-login after registration
+        user.value = response.user
+        token.value = response.token
+        isAuthenticated.value = true
+        
+        // Store in localStorage
+        localStorage.setItem('user', JSON.stringify(response.user))
+        localStorage.setItem('token', response.token)
+        localStorage.setItem('role', response.user.role)
+        
+        return { success: true, user: response.user }
       }
       
-      const newUser = {
-        id: 'user-' + Date.now(),
-        email: userData.email,
-        password: userData.password,
-        name: userData.name,
-        role: userData.role || 'buyer',
-        createdAt: new Date().toISOString()
-      }
-      
-      users.push(newUser)
-      localStorage.setItem('users', JSON.stringify(users))
-      
-      return { success: true, user: newUser }
+      return { success: false, message: response.message }
       
     } catch (error) {
-      return { success: false, message: error.message }
+      return { success: false, message: error.message || 'Registration failed' }
+    } finally {
+      loading.value = false
     }
   }
 
-  const logout = () => {
-    user.value = null
-    token.value = null
-    isAuthenticated.value = false
-    
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('role')
+  const logout = async () => {
+    try {
+      await authApi.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      user.value = null
+      token.value = null
+      isAuthenticated.value = false
+      
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+      localStorage.removeItem('role')
+    }
   }
 
   const checkAuth = () => {
@@ -144,18 +112,35 @@ export const useAuthStore = defineStore('auth', () => {
     return routes[role] || '/'
   }
 
+  const hasRole = (roles) => {
+    if (!Array.isArray(roles)) {
+      roles = [roles]
+    }
+    return roles.includes(user.value?.role)
+  }
+
+  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isSeller = computed(() => user.value?.role === 'seller')
+  const isBuyer = computed(() => user.value?.role === 'buyer')
+
   return {
     user,
     token,
     isAuthenticated,
+    loading,
     currentUser,
     userRole,
     role,
     isLoggedIn,
+    isLoading,
+    isAdmin,
+    isSeller,
+    isBuyer,
     login,
     register,
     logout,
     checkAuth,
-    getDashboardRoute
+    getDashboardRoute,
+    hasRole
   }
 })

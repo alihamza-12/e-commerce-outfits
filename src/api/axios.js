@@ -1,24 +1,39 @@
-// import axios from "axios";
-// export default axios.create({
-//   baseURL: "https://your-api-url.com",
-//   // ...other config
-// });
+import axios from "axios";
 
-// Dummy axios for local development
-export default {
-    post(url, data) {
-        // Simulate a successful login/signup and store token in localStorage
-        if (url === "/loginuser") {
-            localStorage.setItem("Token", "dummy_token");
-            return Promise.resolve({ data: { data: { access_token: "dummy_token" } } });
-        }
-        if (url === "/register") {
-            // Simulate registration
-            return Promise.resolve({ data: { message: "Registered" } });
-        }
-        return Promise.reject(new Error("Unknown endpoint"));
+const axiosInstance = axios.create({
+  baseURL: "http://192.168.12.113:8000/api",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request interceptor to add token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-};
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-// const response = await axios.post("/login", { email, password, role });
-// localStorage.setItem("Token", response.data.access_token); // Store real JWT
+// Response interceptor to handle errors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default axiosInstance;
