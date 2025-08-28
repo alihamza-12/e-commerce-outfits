@@ -1,62 +1,71 @@
 <template>
   <div class="q-pa-md">
-    <div class="text-h4 q-mb-md">Categories</div>
-    <q-card>
+    <div class="text-h4 q-mb-md dark:text-white">Categories</div>
+    
+    <!-- Error Handling -->
+    <div v-if="error" class="q-mb-md">
+      <q-banner dense class="bg-red-5 text-white">
+        {{ error }}
+      </q-banner>
+    </div>
+
+    <div v-if="loading" class="q-mb-md text-center">
+      <q-spinner color="primary" size="3em" />
+      <div class="q-mt-sm text-gray-600 dark:text-gray-400">Loading categories...</div>
+    </div>
+
+    <q-card class="shadow-lg hover:shadow-xl transition-all duration-300 dark:bg-gray-800 dark:border dark:border-gray-700">
       <q-card-section>
-        <div class="row q-col-gutter-md q-mb-md">
-          <div class="col-12 col-md-6">
-            <q-input v-model="search" placeholder="Search categories..." dense outlined />
-          </div>
-          <div class="col-12 col-md-6">
-            <q-btn color="primary" label="Add New Category" @click="showAddDialog = true" />
-          </div>
-        </div>
-        
         <q-table
           :rows="categories"
           :columns="columns"
           row-key="id"
           flat
           bordered
-        >
-          <template v-slot:body-cell-actions="props">
-            <q-td :props="props">
-              <q-btn flat round color="primary" icon="edit" @click="editCategory(props.row)" />
-              <q-btn flat round color="negative" icon="delete" @click="deleteCategory(props.row)" />
-            </q-td>
-          </template>
-        </q-table>
+          :loading="loading"
+        />
       </q-card-section>
     </q-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import AdminService from '@/services/adminApi'
 
-const search = ref('')
-const showAddDialog = ref(false)
+const categories = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 const columns = [
   { name: 'id', label: 'ID', field: 'id', align: 'left' },
   { name: 'name', label: 'Category Name', field: 'name', align: 'left' },
-  { name: 'products', label: 'Products', field: 'products', align: 'center' },
-  { name: 'actions', label: 'Actions', field: 'actions', align: 'center' }
+  { name: 'description', label: 'Description', field: 'description', align: 'left' },
+  { name: 'created_at', label: 'Created At', field: 'created_at', align: 'left' },
+  { name: 'updated_at', label: 'Updated At', field: 'updated_at', align: 'left' }
 ]
 
-const categories = ref([
-  { id: 1, name: 'Electronics', products: 234 },
-  { id: 2, name: 'Clothing', products: 156 },
-  { id: 3, name: 'Books', products: 89 },
-  { id: 4, name: 'Home & Garden', products: 67 },
-  { id: 5, name: 'Sports', products: 45 }
-])
-
-const editCategory = (category) => {
-  console.log('Edit category:', category)
+const fetchCategories = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    const response = await AdminService.getSellerCategories()
+    
+    if (response.success) {
+      // The API returns data in response.data.data structure
+      categories.value = response.data.data || []
+    } else {
+      error.value = response.message || 'Failed to fetch categories'
+    }
+  } catch (err) {
+    error.value = 'Network error: Failed to connect to the server'
+    console.error('Categories fetch error:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
-const deleteCategory = (category) => {
-  console.log('Delete category:', category)
-}
+onMounted(() => {
+  fetchCategories()
+})
 </script>
