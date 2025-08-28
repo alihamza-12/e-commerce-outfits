@@ -1,12 +1,21 @@
 import { defineStore } from 'pinia'
-import api from '@/services/api'
+import api from '@/api/axios'
+import adminApi from '@/services/adminApi'
 
 export const useOrderStore = defineStore('order', {
   state: () => ({
     orders: [],
     order: null,
+    adminOrders: [],
+    adminOrder: null,
     loading: false,
+    adminLoading: false,
     pagination: {
+      page: 1,
+      limit: 10,
+      total: 0,
+    },
+    adminPagination: {
       page: 1,
       limit: 10,
       total: 0,
@@ -62,6 +71,129 @@ export const useOrderStore = defineStore('order', {
           this.orders[index] = response.data
         }
         return response.data
+      } catch (error) {
+        throw error
+      }
+    },
+
+    // Admin order actions
+    async fetchAdminOrders(params = {}) {
+      this.adminLoading = true
+      try {
+        const response = await adminApi.getAdminOrders(params)
+        if (response.success) {
+          this.adminOrders = response.data.data || []
+          this.adminPagination = response.data.pagination || {
+            page: 1,
+            limit: 10,
+            total: this.adminOrders.length
+          }
+        }
+        return response
+      } catch (error) {
+        throw error
+      } finally {
+        this.adminLoading = false
+      }
+    },
+
+    async fetchAdminOrder(id) {
+      this.adminLoading = true
+      try {
+        const response = await adminApi.getAdminOrder(id)
+        if (response.success) {
+          this.adminOrder = response.data.data
+        }
+        return response
+      } catch (error) {
+        throw error
+      } finally {
+        this.adminLoading = false
+      }
+    },
+
+    async updateAdminOrder(id, orderData) {
+      try {
+        const response = await adminApi.updateAdminOrder(id, orderData)
+        if (response.success) {
+          const index = this.adminOrders.findIndex(o => o.id === id)
+          if (index !== -1) {
+            this.adminOrders[index] = response.data.data
+          }
+          if (this.adminOrder && this.adminOrder.id === id) {
+            this.adminOrder = response.data.data
+          }
+        }
+        return response
+      } catch (error) {
+        throw error
+      }
+    },
+
+    async processAdminRefund(id, refundData) {
+      try {
+        const response = await adminApi.processAdminRefund(id, refundData)
+        if (response.success) {
+          const index = this.adminOrders.findIndex(o => o.id === id)
+          if (index !== -1) {
+            this.adminOrders[index] = response.data
+          }
+          if (this.adminOrder && this.adminOrder.id === id) {
+            this.adminOrder = response.data
+          }
+        }
+        return response
+      } catch (error) {
+        throw error
+      }
+    },
+
+  async bulkUpdateOrders(orderIds, updateData) {
+    try {
+      const response = await adminApi.bulkUpdateOrders(orderIds, updateData)
+      if (response.success) {
+        // Update local state with the updated orders
+        this.adminOrders = this.adminOrders.map(order => 
+          orderIds.includes(order.id) ? { ...order, ...updateData } : order
+        )
+      }
+      return response
+    } catch (error) {
+      throw error
+    }
+  },
+
+    async disputeOrder(id, disputeData) {
+      try {
+        const response = await adminApi.disputeOrder(id, disputeData)
+        if (response.success) {
+          const index = this.adminOrders.findIndex(o => o.id === id)
+          if (index !== -1) {
+            this.adminOrders[index] = response.data
+          }
+          if (this.adminOrder && this.adminOrder.id === id) {
+            this.adminOrder = response.data
+          }
+        }
+        return response
+      } catch (error) {
+        throw error
+      }
+    },
+
+    async returnOrder(id, reason) {
+      try {
+        const response = await adminApi.returnOrder(id, reason)
+        if (response.success) {
+          const index = this.adminOrders.findIndex(o => o.id === id)
+          if (index !== -1) {
+            this.adminOrders[index] = response.data
+          }
+          if (this.adminOrder && this.adminOrder.id === id) {
+            this.adminOrder = response.data
+          }
+        }
+        return response
       } catch (error) {
         throw error
       }

@@ -3,27 +3,60 @@
     <div class="text-h4 q-mb-md">Seller Orders</div>
     <q-card>
       <q-card-section>
-        <q-table :rows="sellerOrders" :columns="columns" row-key="id" flat bordered />
+        <q-table 
+          :rows="sellerOrders" 
+          :columns="columns" 
+          row-key="id" 
+          flat 
+          bordered 
+          :loading="loading"
+        />
       </q-card-section>
     </q-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useOrderStore } from '@/stores/order' // 👈 same store as customer orders
+
+const orderStore = useOrderStore()
+const loading = ref(false)
 
 const columns = [
   { name: 'id', label: 'Order ID', field: 'id', align: 'left' },
-  { name: 'seller', label: 'Seller', field: 'seller', align: 'left' },
-  { name: 'items', label: 'Items', field: 'items', align: 'center' },
+  { name: 'seller', label: 'Seller', field: row => row.seller?.name || row.seller, align: 'left' },
+  { name: 'items', label: 'Items', field: row => row.items?.length || 0, align: 'center' },
   { name: 'total', label: 'Total', field: 'total', align: 'right' },
   { name: 'status', label: 'Status', field: 'status', align: 'center' },
-  { name: 'date', label: 'Date', field: 'date', align: 'left' }
+  { name: 'date', label: 'Date', field: row => new Date(row.createdAt).toLocaleDateString(), align: 'left' }
 ]
 
-const sellerOrders = ref([
-  { id: 'SELL-001', seller: 'TechStore', items: 5, total: 2499.95, status: 'processing', date: '2024-01-15' },
-  { id: 'SELL-002', seller: 'FashionHub', items: 3, total: 389.97, status: 'shipped', date: '2024-01-16' },
-  { id: 'SELL-003', seller: 'BookWorld', items: 10, total: 499.90, status: 'delivered', date: '2024-01-14' }
-])
+const sellerOrders = ref([])
+
+const fetchSellerOrders = async () => {
+  loading.value = true
+  try {
+    const response = await orderStore.fetchAdminOrders() // 👈 or use fetchSellerOrders() if exists
+    console.log("Seller Orders API response:", response?.data?.data)
+
+    if (response.success) {
+      const ordersPage = response?.data?.data
+      // ✅ Extract array from paginated object
+      sellerOrders.value = Array.isArray(ordersPage?.data) ? ordersPage.data : []
+    } else {
+      console.error('Failed to fetch seller orders:', response.message)
+      sellerOrders.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching seller orders:', error)
+    sellerOrders.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchSellerOrders()
+})
 </script>

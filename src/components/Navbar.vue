@@ -56,51 +56,90 @@
 
 			<!-- Mobile Toggle Button -->
 			<q-btn flat dense round :icon="drawer ? 'close' : 'menu'" class="mobile-menu-btn"
-				@click="drawer = !drawer" />
+				@click="toggleDrawer" ref="menuButton" />
 		</q-toolbar>
 
-		<!-- Mobile Drawer -->
-		<q-drawer v-model="drawer" side="right" overlay class="drawer-root" :width="280">
-			<q-scroll-area class="fit">
-				<q-list class="q-pa-md">
-					<q-item v-for="(item, index) in filteredNavItems" :key="index" clickable tag="router-link"
-						:to="item.to" active-class="active-drawer-link" @click="drawer = false" class="drawer-link">
-						<q-item-section>{{ item.label }}</q-item-section>
-					</q-item>
+		<!-- Mobile Dropdown Menu -->
+		<q-menu v-model="drawer" :target="$refs.menuButton?.$el" anchor="bottom right" self="top right" class="mobile-dropdown-menu">
+			<q-list class="q-pa-sm" style="min-width: 250px">
+				<!-- Navigation Items -->
+				<q-item v-for="(item, index) in navItems" :key="index" clickable tag="router-link"
+					:to="item.to" active-class="active-dropdown-link" @click="drawer = false" class="dropdown-link">
+					<q-item-section avatar>
+						<q-icon :name="getNavIcon(item.label)" />
+					</q-item-section>
+					<q-item-section>
+						<div class="nav-item-content">
+							<div class="nav-label">{{ item.label }}</div>
+							<div class="nav-subtitle" v-if="getNavSubtitle(item.label)">{{ getNavSubtitle(item.label) }}</div>
+						</div>
+					</q-item-section>
+				</q-item>
 
-					<q-separator class="q-my-md" />
+				<q-separator class="q-my-md" />
 
-					<q-item clickable class="drawer-link" @click="showSearchBar">
-						<q-item-section avatar>
-							<q-icon name="search" />
-						</q-item-section>
-						<q-item-section>Search</q-item-section>
-					</q-item>
+				<!-- Quick Actions -->
+				<q-item clickable class="dropdown-link action-item" @click="showSearchBar">
+					<q-item-section avatar>
+						<q-icon name="search" color="blue-6" />
+					</q-item-section>
+					<q-item-section>
+						<div class="nav-item-content">
+							<div class="nav-label">Search</div>
+							<div class="nav-subtitle">Find products quickly</div>
+						</div>
+					</q-item-section>
+				</q-item>
 
-					<q-item clickable class="drawer-link" @click="showCartModal = true; drawer = false">
-						<q-item-section avatar>
-							<q-icon name="shopping_cart" />
-						</q-item-section>
-                  <q-item-section>Cart</q-item-section>
-                  <q-badge v-if="cartStore.totalItems > 0" color="red" class="q-ml-sm">
-                    {{ cartStore.totalItems }}
-                  </q-badge>
-					</q-item>
+				<q-item clickable class="dropdown-link action-item" @click="showCartModal = true; drawer = false">
+					<q-item-section avatar>
+						<q-icon name="shopping_cart" color="orange-6" />
+					</q-item-section>
+					<q-item-section>
+						<div class="nav-item-content">
+							<div class="nav-label">Cart</div>
+							<div class="nav-subtitle">{{ cartStore.totalItems }} item(s)</div>
+						</div>
+					</q-item-section>
+					<q-badge v-if="cartStore.totalItems > 0" color="red" floating class="cart-badge-mobile">
+						{{ cartStore.totalItems }}
+					</q-badge>
+				</q-item>
 
-					<template v-if="isLoggedIn">
+				<q-separator class="q-my-md" />
+
+				<!-- Authentication Section -->
+				<template v-if="isLoggedIn">
+					<q-item class="user-profile-section">
 						<UserProfile />
-					</template>
-					<template v-else>
-						<q-item clickable class="drawer-link" @click="drawer = false">
-							<q-item-section avatar>
-								<q-icon name="person" />
-							</q-item-section>
-							<q-item-section>Login</q-item-section>
-						</q-item>
-					</template>
-				</q-list>
-			</q-scroll-area>
-		</q-drawer>
+					</q-item>
+				</template>
+				<template v-else>
+					<div class="auth-section q-px-md q-pb-md">
+						<q-btn 
+							to="/loginuser" 
+							unelevated 
+							color="primary" 
+							class="full-width q-mb-sm auth-btn"
+							@click="drawer = false"
+						>
+							<q-icon name="login" class="q-mr-sm" />
+							Log In
+						</q-btn>
+						<q-btn 
+							to="/registeruser" 
+							outline 
+							color="primary" 
+							class="full-width auth-btn"
+							@click="drawer = false"
+						>
+							<q-icon name="person_add" class="q-mr-sm" />
+							Sign Up
+						</q-btn>
+					</div>
+				</template>
+			</q-list>
+		</q-menu>
 
 		<!-- Cart Modal -->
 		<CartModal v-model="showCartModal" />
@@ -168,6 +207,32 @@ function submitSearch() {
 function goToCart() {
   $q.notify({ message: "Go to cart page (not implemented)" });
 }
+
+
+// Helper functions for mobile drawer
+function getNavIcon(label) {
+  const iconMap = {
+    "Home": "home",
+    "Shop": "store",
+    "Men": "man",
+    "Women": "woman",
+    "Kids": "child_care",
+    "Contact": "contact_mail"
+  };
+  return iconMap[label] || "label";
+}
+
+function getNavSubtitle(label) {
+  const subtitleMap = {
+    "Shop": "Browse all products",
+    "Men": "Men's fashion",
+    "Women": "Women's collection",
+    "Kids": "Children's clothing",
+    "Contact": "Get in touch with us"
+  };
+  return subtitleMap[label] || "";
+}
+
 </script>
 
 <style scoped>
@@ -673,8 +738,127 @@ function goToCart() {
 	color: #fff;
 }
 
+/* Mobile Dropdown Menu Styles */
+.mobile-dropdown-menu {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e9ecef;
+  margin-top: 8px;
+}
+
+.dropdown-link {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #23272b;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-link::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(2, 123, 227, 0.1),
+      transparent);
+  transition: all 0.5s ease;
+}
+
+.dropdown-link:hover,
+.dropdown-link:focus {
+  background: rgba(2, 123, 227, 0.1);
+  color: #027be3;
+  transform: translateX(3px);
+  outline: none;
+}
+
+.dropdown-link:hover::before,
+.dropdown-link:focus::before {
+  left: 100%;
+}
+
+.active-dropdown-link {
+  color: #027be3 !important;
+  font-weight: 700;
+  background: rgba(2, 123, 227, 0.1) !important;
+  box-shadow: 2px 0 8px rgba(2, 123, 227, 0.15);
+}
+
+.nav-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #23272b;
+}
+
+.nav-subtitle {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.action-item .nav-label {
+  color: #027be3;
+}
+
+.cart-badge-mobile {
+  font-size: 0.7rem;
+  padding: 4px 6px;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.auth-section {
+  border-top: 1px solid #e9ecef;
+  padding-top: 12px;
+}
+
+.auth-btn {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.user-profile-section {
+  padding: 12px;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 599px) {
+  .mobile-dropdown-menu {
+    max-width: 280px !important;
+    margin-top: 5px;
+  }
+  
+  .nav-label {
+    font-size: 0.9rem;
+  }
+  
+  .nav-subtitle {
+    font-size: 0.7rem;
+  }
+  
+  .auth-btn {
+    font-size: 0.85rem;
+    padding: 10px;
+  }
+}
+
 .hero-section {
 	margin-top: 32px;
 	/* ...existing code... */
 }
+
 </style>
