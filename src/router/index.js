@@ -6,6 +6,7 @@ import Contact from '../views/home/Contact.vue'
 import Men from '../views/home/Men.vue'
 import Women from '../views/home/Women.vue'
 import KidsFashion from '../views/home/KidsFashion.vue'
+import UpdateStock from '@/views/seller/UpdateStock.vue'
 
 const routes = [
   // Home routes
@@ -131,6 +132,10 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: 'seller' },
     children: [
       {
+        path: '',
+        redirect: '/seller/dashboard',
+      },
+      {
         path: 'dashboard',
         name: 'SellerDashboard',
         component: () => import('@/views/seller/SellerDashboard.vue'),
@@ -155,10 +160,7 @@ const routes = [
         meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
-        path: 'inventory',
-        name: 'SellerInventory',
-        component: () => import('@/views/seller/InventoryTable.vue'),
-        meta: { requiresAuth: true, requiresRole: 'seller' }
+       path: 'stock', name: 'SellerStock', component: () => import('@/views/seller/UpdateStock.vue')
       },
       {
         path: 'settings',
@@ -185,6 +187,14 @@ const routes = [
     component: () => import('@/views/home/HomePage.vue'),
     meta: { requiresAuth: true, requiresRole: 'buyer' }
   },
+
+  //Coustomer Routes
+  {
+  path: '/customer/profile',
+  name: 'CustomerProfile',
+  component: () => import('@/views/customer/CustomerProfile.vue'),
+  meta: { requiresAuth: true } // optional
+},
 
   // User authentication routes
   {

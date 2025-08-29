@@ -1,433 +1,1064 @@
 <template>
-	<q-card class="product-form-card">
-		<q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-			<div class="form-title">
-				<q-icon :name="isEdit ? 'edit' : 'add_box'" size="md" class="q-mr-sm" />
-				{{ isEdit ? "Edit Product" : "Add New Product" }}
-			</div>
-			<q-separator spaced />
+	<div class="p-4 max-w-[1200px] mx-auto">
+		<!-- Header -->
+		<div
+			class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+			<div class="flex items-center gap-4">
+				<div>
+					<h2 class="text-2xl font-semibold text-slate-800">Seller Products</h2>
+					<p class="text-sm text-slate-500">
+						Manage your products — search, edit, and delete.
+					</p>
+				</div>
 
-			<!-- Product Info -->
-			<div class="q-gutter-md row q-col-gutter-md">
-				<q-input
-					v-model="form.title"
-					label="Product Name"
-					:rules="[(v) => !!v || 'Product name is required']"
-					dense
-					outlined
-					class="col-12 col-md-6"
-					required />
-				<q-input
-					v-model="form.sku"
-					label="SKU"
-					:rules="[(v) => !!v || 'SKU is required']"
-					dense
-					outlined
-					class="col-12 col-md-6"
-					required />
-			</div>
-
-			<q-input
-				v-model="form.description"
-				label="Description"
-				type="textarea"
-				autogrow
-				outlined
-				:rules="[(v) => !!v || 'Description is required']"
-				required />
-
-			<!-- Category & Brand -->
-			<div class="q-gutter-md row q-col-gutter-md">
-				<q-select
-					v-model="form.category"
-					:options="categories"
-					label="Category"
-					outlined
-					:rules="[(v) => !!v || 'Category is required']"
-					class="col-12 col-md-6"
-					required />
-				<q-input
-					v-model="form.brand"
-					label="Brand"
-					outlined
-					:rules="[(v) => !!v || 'Brand is required']"
-					class="col-12 col-md-6"
-					required />
+				<!-- Search -->
+				<div class="relative">
+					<input
+						v-model="search"
+						@input="onSearch"
+						placeholder="Search by name or description..."
+						class="pl-10 pr-4 py-2 w-72 rounded-lg border bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-200" />
+					<svg
+						class="absolute left-3 top-2.5 w-5 h-5 text-slate-300"
+						viewBox="0 0 24 24"
+						fill="none"
+						aria-hidden>
+						<path
+							d="M21 21l-4.35-4.35"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round" />
+						<circle
+							cx="11"
+							cy="11"
+							r="5"
+							stroke="currentColor"
+							stroke-width="2" />
+					</svg>
+				</div>
 			</div>
 
-			<!-- Images Upload -->
-			<div>
-				<div class="q-mb-xs text-weight-medium">Product Images</div>
-				<q-uploader
-					url=""
-					:auto-upload="false"
-					accept="image/*"
-					multiple
-					ref="uploader"
-					@added="onImagesAdded"
-					:max-files="6"
-					:hide-upload-btn="true"
-					:hide-upload-progress="true"
-					:hide-upload="true"
-					style="max-width: 100%">
-					<template v-slot:list>
-						<div class="row q-col-gutter-sm q-mb-sm">
-							<div
-								v-for="(img, idx) in imagesPreview"
-								:key="idx"
-								class="relative"
-								style="width: 90px">
+			<div class="flex items-center gap-3">
+				<div class="text-sm text-slate-600 mr-2">
+					Total: <span class="font-semibold text-slate-800">{{ total }}</span>
+				</div>
+				<button
+					@click="openCreateModal"
+					class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-lg shadow hover:shadow-lg transition-transform transform hover:-translate-y-0.5">
+					<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden>
+						<path
+							d="M12 5v14M5 12h14"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round" />
+					</svg>
+					Add product
+				</button>
+			</div>
+		</div>
+
+		<!-- Toast -->
+		<transition name="fade">
+			<div
+				v-if="toast.message"
+				:class="toastClass"
+				class="fixed right-6 top-6 z-50 px-4 py-2 rounded-md text-white shadow-lg">
+				{{ toast.message }}
+			</div>
+		</transition>
+
+		<!-- Loading / Error -->
+		<div v-if="loading" class="grid gap-4">
+			<div
+				v-for="n in 4"
+				:key="n"
+				class="animate-pulse h-20 rounded-lg bg-slate-100"></div>
+		</div>
+
+		<div
+			v-else-if="error"
+			class="p-4 bg-rose-50 text-rose-700 rounded-lg shadow-sm">
+			{{ error }}
+		</div>
+
+		<!-- Table -->
+		<div v-else class="bg-white rounded-lg shadow-md overflow-hidden">
+			<div class="flex items-center justify-between p-4 border-b">
+				<div class="flex items-center gap-3">
+					<label class="flex items-center gap-2 text-sm text-slate-600">
+						<input
+							type="checkbox"
+							v-model="selectAll"
+							@change="toggleAll"
+							class="accent-sky-500" />
+						<span>All</span>
+					</label>
+
+					<div class="flex items-center gap-2 text-sm text-slate-600">
+						<span>Sort</span>
+						<select v-model="sortBy" class="px-2 py-1 border rounded-md">
+							<option value="newest">Newest</option>
+							<option value="oldest">Oldest</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="flex items-center gap-3">
+					<div class="text-sm">
+						Page: <strong>{{ currentPage }}</strong>
+					</div>
+				</div>
+			</div>
+
+			<div class="overflow-auto">
+				<table class="min-w-full divide-y">
+					<thead class="bg-slate-50">
+						<tr>
+							<th class="p-3 text-left text-sm text-slate-600">Product</th>
+							<th class="p-3 text-right text-sm text-slate-600">Price</th>
+							<th class="p-3 text-left text-sm text-slate-600">Status</th>
+							<th class="p-3 text-center text-sm text-slate-600">Actions</th>
+						</tr>
+					</thead>
+
+					<tbody class="bg-white divide-y">
+						<tr
+							v-for="prod in displayedProducts"
+							:key="prod.id"
+							class="hover:bg-slate-50">
+							<td class="p-4 flex items-start gap-3">
 								<img
-									:src="img"
-									class="img-thumb"
-									:alt="'Product image ' + (idx + 1)" />
-								<q-btn
-									size="xs"
-									round
-									color="negative"
-									icon="close"
-									class="img-remove-btn"
-									@click="removeImage(idx)" />
-							</div>
-							<q-btn
-								flat
-								round
-								icon="add_photo_alternate"
-								color="primary"
-								@click="$refs.uploader.pickFiles()"
-								class="img-thumb img-add-btn" />
+									:src="firstImage(prod)"
+									@error="(e) => (e.target.src = PLACEHOLDER_IMAGE)"
+									class="w-14 h-14 rounded-lg object-cover border"
+									alt="thumb" />
+								<div class="min-w-0">
+									<div class="font-medium text-slate-800 truncate">
+										{{ prod.name }}
+									</div>
+									<div class="text-xs text-slate-400 mt-1 line-clamp-2">
+										{{ prod.description || "—" }}
+									</div>
+								</div>
+							</td>
+
+							<td class="p-4 text-right text-sky-600 font-semibold">
+								${{ formatPrice(prod.price) }}
+							</td>
+
+							<td class="p-4">
+								<span
+									:class="statusClass(prod)"
+									class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold">
+									{{ statusLabel(prod) }}
+								</span>
+							</td>
+
+							<td class="p-4 text-center">
+								<div class="inline-flex items-center gap-2">
+									<button
+										@click="openEditModal(prod)"
+										title="Edit"
+										class="flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-b from-slate-800 to-slate-700 text-white shadow hover:brightness-105 transition">
+										<svg
+											class="w-4 h-4"
+											viewBox="0 0 24 24"
+											fill="none"
+											aria-hidden>
+											<path
+												d="M3 21v-3l11-11 3 3-11 11H3z"
+												stroke="currentColor"
+												stroke-width="1.5"
+												stroke-linecap="round"
+												stroke-linejoin="round" />
+										</svg>
+									</button>
+
+									<button
+										@click="confirmDeleteModal(prod)"
+										title="Delete"
+										class="flex items-center justify-center w-9 h-9 rounded-md bg-rose-600 text-white shadow hover:bg-rose-700 transition">
+										<svg
+											class="w-4 h-4"
+											viewBox="0 0 24 24"
+											fill="none"
+											aria-hidden>
+											<path
+												d="M3 6h18M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6M10 6V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"
+												stroke="currentColor"
+												stroke-width="1.5"
+												stroke-linecap="round"
+												stroke-linejoin="round" />
+										</svg>
+									</button>
+								</div>
+							</td>
+						</tr>
+
+						<tr v-if="displayedProducts.length === 0">
+							<td class="p-6 text-center text-sm text-slate-500" colspan="4">
+								No products found.
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="p-4 flex items-center justify-between border-t">
+				<div class="text-sm text-slate-600">
+					Records per page:
+					<select
+						v-model.number="perPage"
+						@change="onPerPageChange"
+						class="ml-2 border rounded px-2 py-1">
+						<option v-for="o in perPageOptions" :key="o" :value="o">
+							{{ o }}
+						</option>
+					</select>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<button
+						@click="prevPage"
+						:disabled="currentPage === 1"
+						class="px-3 py-1 border rounded-l bg-white disabled:opacity-50">
+						‹
+					</button>
+					<div class="px-3 py-1 border-t border-b">
+						{{ currentPage }} / {{ totalPages }}
+					</div>
+					<button
+						@click="nextPage"
+						:disabled="currentPage === totalPages"
+						class="px-3 py-1 border rounded-r bg-white disabled:opacity-50">
+						›
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Create/Edit modal -->
+		<transition name="scale-fade">
+			<div
+				v-if="showModal"
+				class="fixed inset-0 z-50 flex items-center justify-center p-4">
+				<div class="absolute inset-0 bg-black/40" @click="closeModal"></div>
+
+				<div
+					class="relative w-[920px] max-w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+					<div class="flex items-center justify-between px-6 py-4 border-b">
+						<div>
+							<h3 class="text-lg font-semibold text-slate-800">
+								{{ editingProductId ? "Edit product" : "Create product" }}
+							</h3>
+							<p class="text-sm text-slate-500 mt-1">
+								Upload image files (multipart/form-data). No manual URL/path
+								inputs.
+							</p>
 						</div>
-					</template>
-				</q-uploader>
-				<div v-if="imageError" class="text-negative text-caption q-mt-xs">
-					{{ imageError }}
+						<button
+							@click="closeModal"
+							class="text-slate-400 hover:text-slate-700 p-2">
+							✕
+						</button>
+					</div>
+
+					<form
+						@submit.prevent="saveProduct"
+						class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6"
+						novalidate>
+						<div class="md:col-span-2 space-y-4">
+							<div>
+								<label class="block text-sm font-medium text-slate-700"
+									>Name <span class="text-rose-500">*</span></label
+								>
+								<input
+									v-model.trim="productForm.name"
+									class="mt-2 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-200" />
+								<div v-if="formErrors.name" class="text-rose-600 text-sm mt-1">
+									{{ formErrors.name }}
+								</div>
+							</div>
+
+							<div>
+								<label class="block text-sm font-medium text-slate-700"
+									>Description</label
+								>
+								<textarea
+									v-model="productForm.description"
+									rows="4"
+									class="mt-2 w-full px-4 py-2 border rounded-lg"></textarea>
+								<div
+									v-if="formErrors.description"
+									class="text-rose-600 text-sm mt-1">
+									{{ formErrors.description }}
+								</div>
+							</div>
+
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium text-slate-700"
+										>Price <span class="text-rose-500">*</span></label
+									>
+									<input
+										v-model.number="productForm.price"
+										type="number"
+										min="0"
+										step="0.01"
+										class="mt-2 w-48 px-4 py-2 border rounded-lg" />
+									<div
+										v-if="formErrors.price"
+										class="text-rose-600 text-sm mt-1">
+										{{ formErrors.price }}
+									</div>
+								</div>
+
+								<div>
+									<label class="block text-sm font-medium text-slate-700"
+										>Category <span class="text-rose-500">*</span></label
+									>
+									<select
+										v-model="productForm.category_id"
+										class="mt-2 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-200">
+										<option value="">Select category...</option>
+										<option
+											v-for="cat in categories"
+											:key="cat.id"
+											:value="cat.id">
+											{{ cat.name }}
+										</option>
+									</select>
+									<div
+										v-if="formErrors.category_id"
+										class="text-rose-600 text-sm mt-1">
+										{{ formErrors.category_id }}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="space-y-4">
+							<div class="border rounded-lg p-3 bg-slate-50">
+								<label class="block text-sm font-medium text-slate-700 mb-2"
+									>Images</label
+								>
+
+								<input
+									type="file"
+									accept="image/*"
+									multiple
+									@change="onFilesChange"
+									class="block w-full text-sm" />
+								<div class="text-xs text-slate-500 mt-2">
+									Choose image files to upload. Existing images (if any) are
+									shown below; click ✕ to remove them from the product.
+								</div>
+
+								<div class="mt-3 grid grid-cols-3 gap-2">
+									<div
+										v-for="(p, i) in imagePreviews"
+										:key="'pv-' + i"
+										class="w-full h-20 rounded overflow-hidden border bg-white flex items-center justify-center">
+										<img :src="p" class="w-full h-full object-cover" />
+									</div>
+
+									<div
+										v-for="(e, i) in existingImages"
+										:key="'ex-' + i"
+										v-if="e && !e.removed"
+										class="w-full h-20 rounded overflow-hidden border bg-white relative">
+										<img
+											:src="resolveImageUrl(e.url)"
+											class="w-full h-full object-cover" />
+										<button
+											type="button"
+											@click="markExistingRemoved(i)"
+											class="absolute top-1 right-1 bg-white/70 rounded-full p-1 text-rose-600">
+											✕
+										</button>
+									</div>
+
+									<div
+										v-for="(e, i) in existingImages"
+										:key="'ex-rem-' + i"
+										v-if="e && e.removed"
+										class="w-full h-20 rounded overflow-hidden border bg-rose-50 flex items-center justify-center text-rose-600 text-xs">
+										Removed
+										<button
+											type="button"
+											@click="unmarkExistingRemoved(i)"
+											class="ml-2 text-slate-700">
+											(undo)
+										</button>
+									</div>
+								</div>
+
+								<div
+									v-if="formErrors.images"
+									class="text-rose-600 text-sm mt-2">
+									{{ formErrors.images }}
+								</div>
+							</div>
+
+							<div class="flex items-center gap-3 justify-end">
+								<button
+									type="button"
+									@click="closeModal"
+									class="px-4 py-2 rounded-lg bg-neutral-100">
+									Cancel
+								</button>
+								<button
+									type="submit"
+									:disabled="savingProduct"
+									class="px-4 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow">
+									<span
+										v-if="savingProduct"
+										class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+									{{ editingProductId ? "Update product" : "Create product" }}
+								</button>
+							</div>
+						</div>
+					</form>
+
+					<div
+						v-if="modalError"
+						class="px-6 py-3 text-sm text-rose-600 border-t">
+						{{ modalError }}
+					</div>
 				</div>
 			</div>
+		</transition>
 
-			<!-- Variants Section -->
-			<div>
-				<div class="flex items-center justify-between q-mb-xs">
-					<div class="text-weight-medium">Variants</div>
-					<q-btn
-						color="primary"
-						icon="add"
-						label="Add Variant"
-						size="sm"
-						unelevated
-						@click="addVariant" />
-				</div>
-				<div
-					v-if="form.variants.length === 0"
-					class="text-grey text-caption q-mb-sm">
-					No variants added yet.
-				</div>
-				<div
-					v-for="(variant, idx) in form.variants"
-					:key="idx"
-					class="q-pa-sm q-mb-sm bg-grey-2 rounded-borders row q-col-gutter-sm items-end">
-					<q-input
-						v-model="variant.name"
-						label="Variant Name"
-						dense
-						outlined
-						:rules="[(v) => !!v || 'Required']"
-						class="col-12 col-md-3"
-						required />
-					<q-input
-						v-model="variant.color"
-						label="Color"
-						dense
-						outlined
-						class="col-12 col-md-3" />
-					<q-input
-						v-model.number="variant.price"
-						label="Price"
-						type="number"
-						dense
-						outlined
-						:rules="[(v) => v >= 0 || 'Invalid']"
-						prefix="Rs "
-						class="col-12 col-md-2"
-						required />
-					<q-input
-						v-model.number="variant.stock"
-						label="Stock"
-						type="number"
-						dense
-						outlined
-						:rules="[(v) => v >= 0 || 'Invalid']"
-						class="col-12 col-md-2"
-						required />
-					<q-btn
-						color="negative"
-						icon="delete"
-						size="sm"
-						round
-						flat
-						@click="removeVariant(idx)"
-						class="col-12 col-md-2" />
+		<!-- Delete confirm -->
+		<transition name="scale-fade">
+			<div
+				v-if="deleteConfirmId"
+				class="fixed inset-0 z-50 flex items-center justify-center p-4">
+				<div class="absolute inset-0 bg-black/40" @click="cancelDelete"></div>
+				<div class="relative w-[420px] bg-white rounded-lg shadow-xl p-5">
+					<h4 class="text-lg font-semibold">Confirm deletion</h4>
+					<p class="text-sm text-slate-500 mt-2">
+						Delete product <strong>{{ productToDelete?.name }}</strong
+						>? This action cannot be undone.
+					</p>
+					<div class="flex justify-end gap-3 mt-4">
+						<button
+							@click="cancelDelete"
+							class="px-4 py-2 rounded-md bg-neutral-100">
+							Cancel
+						</button>
+						<button
+							@click="performDelete"
+							:disabled="deleting"
+							class="px-4 py-2 rounded-md bg-rose-600 text-white">
+							Delete
+						</button>
+					</div>
 				</div>
 			</div>
-
-			<!-- Pricing & Inventory -->
-			<div class="q-gutter-md row q-col-gutter-md">
-				<q-input
-					v-model.number="form.price"
-					label="Default Price"
-					type="number"
-					prefix="Rs "
-					outlined
-					:rules="[(v) => v >= 0 || 'Must be positive']"
-					class="col-12 col-md-6"
-					required />
-				<q-input
-					v-model.number="form.stock"
-					label="Default Stock"
-					type="number"
-					outlined
-					:rules="[(v) => v >= 0 || 'Must be positive']"
-					class="col-12 col-md-6"
-					required />
-			</div>
-
-			<!-- Status -->
-			<q-select
-				v-model="form.status"
-				:options="statusOptions"
-				label="Status"
-				outlined
-				required />
-
-			<!-- Buttons -->
-			<div class="row q-col-gutter-md q-mt-md">
-				<q-btn
-					type="submit"
-					color="primary"
-					label="Save"
-					icon="save"
-					:loading="saving"
-					unelevated
-					class="col" />
-				<q-btn type="reset" color="grey-6" label="Reset" flat class="col" />
-				<q-btn
-					color="negative"
-					label="Cancel"
-					flat
-					@click="onCancel"
-					class="col" />
-			</div>
-		</q-form>
-	</q-card>
+		</transition>
+	</div>
 </template>
 
 <script setup>
-	import { ref, reactive, computed } from "vue";
-	import { useQuasar } from "quasar";
+	import { ref, reactive, onMounted, watch, computed } from "vue";
+	import axios from "@/api/axios";
 
-	// Props for edit mode
-	const props = defineProps({
-		product: Object, // if editing, pass product object
-	});
-	const emit = defineEmits(["save", "cancel"]);
+	/* core state */
+	const products = ref([]);
+	const loading = ref(false);
+	const error = ref(null);
 
-	const $q = useQuasar();
+	const search = ref("");
+	const selected = ref([]);
+	const selectAll = ref(false);
 
-	const isEdit = computed(() => !!props.product);
+	const currentPage = ref(1);
+	const perPage = ref(8);
+	const perPageOptions = [8, 16, 32];
+	const total = ref(0);
+	const sortBy = ref("newest");
 
-	const categories = [
-		"Clothing",
-		"Electronics",
-		"Footwear",
-		"Accessories",
-		"Home",
-		"Beauty",
-		"Other",
-	];
+	const totalPages = computed(() =>
+		perPage.value > 0 ? Math.max(1, Math.ceil(total.value / perPage.value)) : 1
+	);
 
-	const statusOptions = [
-		{ label: "Active", value: "active" },
-		{ label: "Inactive", value: "inactive" },
-		{ label: "Draft", value: "draft" },
-	];
-
-	// Form state
-	const form = reactive({
-		title: "",
-		sku: "",
+	/* modal/form */
+	const showModal = ref(false);
+	const editingProductId = ref(null);
+	const productForm = reactive({
+		name: "",
 		description: "",
-		category: "",
-		brand: "",
-		images: [],
-		variants: [],
 		price: 0,
-		stock: 0,
-		status: "active",
+		is_approved: false,
+		is_blocked: false,
+		category_id: null,
+	});
+	const formErrors = reactive({
+		name: "",
+		description: "",
+		price: "",
+		images: "",
+		category_id: "",
+	});
+	const modalError = ref(null);
+	const savingProduct = ref(false);
+
+	/* images + delete + toast */
+	/* selectedFiles are new files to upload (binary). */
+	const selectedFiles = ref([]); // File[]
+	const imagePreviews = ref([]); // object URLs
+	/* existingImages holds server-returned image path strings for display.
+   Each entry: { url: string, removed: boolean }
+*/
+	const existingImages = ref([]);
+	const deleteExistingList = ref([]); // list of original strings flagged for removal
+
+	const deleteConfirmId = ref(null);
+	const deleting = ref(false);
+	const productToDelete = ref(null);
+
+	const toast = reactive({ message: "", type: "info" });
+	function showToast(message, type = "info", ms = 3000) {
+		toast.message = message;
+		toast.type = type;
+		setTimeout(() => (toast.message = ""), ms);
+	}
+
+	const toastClass = computed(() => {
+		if (!toast.message) return "";
+		return toast.type === "success"
+			? "bg-emerald-600"
+			: toast.type === "error"
+			? "bg-rose-600"
+			: "bg-sky-500";
 	});
 
-	// For image preview
-	const imagesPreview = ref([]);
-	const imageError = ref("");
-
-	// For saving state
-	const saving = ref(false);
-
-	// Load product if editing
-	if (props.product) {
-		form.title = props.product.title || "";
-		form.sku = props.product.sku || "";
-		form.description = props.product.description || "";
-		form.category = props.product.category || "";
-		form.brand = props.product.brand || "";
-		form.price = props.product.price || 0;
-		form.stock = props.product.stock || 0;
-		form.status = props.product.status || "active";
-		form.variants = (props.product.variants || []).map((v) => ({ ...v }));
-		imagesPreview.value = props.product.images || [];
+	/* helpers */
+	function formatPrice(p) {
+		try {
+			return Number(p).toFixed(2);
+		} catch {
+			return p;
+		}
+	}
+	function statusLabel(prod) {
+		if (prod.is_blocked) return "BLOCKED";
+		if (prod.is_approved) return "APPROVED";
+		return "PENDING";
+	}
+	function statusClass(prod) {
+		return prod.is_blocked
+			? "bg-rose-100 text-rose-700"
+			: prod.is_approved
+			? "bg-emerald-100 text-emerald-700"
+			: "bg-sky-100 text-sky-700";
 	}
 
-	// Image handling
-	function onImagesAdded({ files }) {
-		imageError.value = "";
-		if (files.length + imagesPreview.value.length > 6) {
-			imageError.value = "Maximum 6 images allowed";
+	const PLACEHOLDER_IMAGE =
+		"data:image/svg+xml;utf8," +
+		encodeURIComponent(
+			'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90" viewBox="0 0 120 90"><rect width="100%" height="100%" fill="#eef7f2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9aa9a0" font-size="12">No image</text></svg>'
+		);
+
+	/* image helpers (robust) */
+	function resolveImageUrl(u) {
+		if (!u) return PLACEHOLDER_IMAGE;
+		if (typeof u !== "string") return PLACEHOLDER_IMAGE;
+		const s = u.trim();
+		if (!s) return PLACEHOLDER_IMAGE;
+		if (/^https?:\/\//i.test(s)) return s;
+
+		const base =
+			(axios.defaults && axios.defaults.baseURL) || window.location.origin;
+		const originCandidate = String(base)
+			.replace(/\/api\/?$/, "")
+			.replace(/\/$/, "");
+
+		if (s.startsWith("/")) return `${window.location.origin}${s}`;
+		if (/^(storage|uploads|public)\//i.test(s) || s.includes("storage/")) {
+			return `${originCandidate}/${s.replace(/^\/+/, "")}`;
+		}
+		return `${originCandidate}/storage/${s.replace(/^\/+/, "")}`;
+	}
+	function firstImage(prod) {
+		if (!prod) return PLACEHOLDER_IMAGE;
+		if (prod.image && typeof prod.image === "string")
+			return resolveImageUrl(prod.image);
+		if (prod.image_url && typeof prod.image_url === "string")
+			return resolveImageUrl(prod.image_url);
+		const imgs = prod.images;
+		if (Array.isArray(imgs) && imgs.length) {
+			for (const it of imgs) {
+				if (!it) continue;
+				if (typeof it === "string") return resolveImageUrl(it);
+				if (typeof it === "object") {
+					const candidate =
+						it.url || it.path || it.file || it.src || it.location;
+					if (candidate && typeof candidate === "string")
+						return resolveImageUrl(candidate);
+				}
+			}
+		}
+		const deep = prod?.image_path || prod?.photo || prod?.thumbnail;
+		if (deep && typeof deep === "string") return resolveImageUrl(deep);
+		return PLACEHOLDER_IMAGE;
+	}
+
+	/* files preview handler */
+	function onFilesChange(e) {
+		const files = Array.from(e.target.files || []);
+		selectedFiles.value = files;
+		imagePreviews.value.forEach((u) => URL.revokeObjectURL(u));
+		imagePreviews.value = files.map((f) => URL.createObjectURL(f));
+		e.target.value = "";
+		formErrors.images = "";
+		modalError.value = null;
+	}
+
+	/* existing images removal toggles */
+	function markExistingRemoved(idx) {
+		const item = existingImages.value[idx];
+		if (!item) return;
+		// ensure item object shape
+		if (typeof item !== "object") {
+			existingImages.value[idx] = { url: String(item || ""), removed: true };
 			return;
 		}
-		for (const file of files) {
-			form.images.push(file);
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				imagesPreview.value.push(e.target.result);
-			};
-			reader.readAsDataURL(file);
-		}
+		existingImages.value[idx].removed = true;
 	}
-	function removeImage(idx) {
-		imagesPreview.value.splice(idx, 1);
-		form.images.splice(idx, 1);
-	}
-
-	// Variants
-	function addVariant() {
-		form.variants.push({
-			name: "",
-			color: "",
-			price: 0,
-			stock: 0,
-		});
-	}
-	function removeVariant(idx) {
-		form.variants.splice(idx, 1);
-	}
-
-	// Reset form
-	function onReset() {
-		if (isEdit.value && props.product) {
-			form.title = props.product.title || "";
-			form.sku = props.product.sku || "";
-			form.description = props.product.description || "";
-			form.category = props.product.category || "";
-			form.brand = props.product.brand || "";
-			form.price = props.product.price || 0;
-			form.stock = props.product.stock || 0;
-			form.status = props.product.status || "active";
-			form.variants = (props.product.variants || []).map((v) => ({ ...v }));
-			imagesPreview.value = props.product.images || [];
-			form.images = [];
-		} else {
-			form.title = "";
-			form.sku = "";
-			form.description = "";
-			form.category = "";
-			form.brand = "";
-			form.price = 0;
-			form.stock = 0;
-			form.status = "active";
-			form.variants = [];
-			imagesPreview.value = [];
-			form.images = [];
-		}
-		imageError.value = "";
-	}
-
-	// Submit handler
-	async function onSubmit() {
-		imageError.value = "";
-		if (imagesPreview.value.length === 0) {
-			imageError.value = "At least one image is required";
+	function unmarkExistingRemoved(idx) {
+		const item = existingImages.value[idx];
+		if (!item) return;
+		if (typeof item !== "object") {
+			existingImages.value[idx] = { url: String(item || ""), removed: false };
 			return;
 		}
-		saving.value = true;
-		setTimeout(() => {
-			const productData = {
-				...form,
-				images: imagesPreview.value,
-				variants: form.variants.map((v) => ({ ...v })),
-			};
-			emit("save", productData);
-			$q.notify({
-				type: "positive",
-				message: isEdit.value ? "Product updated!" : "Product created!",
+		existingImages.value[idx].removed = false;
+	}
+
+	/* fetch products */
+	async function fetchProducts() {
+		loading.value = true;
+		error.value = null;
+		try {
+			const res = await axios.get("/seller/products", {
+				params: { page: currentPage.value, per_page: perPage.value },
 			});
-			saving.value = false;
-		}, 1200);
+			const payload = res?.data ?? null;
+
+			if (payload && payload.data && Array.isArray(payload.data))
+				products.value = payload.data;
+			else if (
+				payload &&
+				payload.data &&
+				payload.data.data &&
+				Array.isArray(payload.data.data)
+			)
+				products.value = payload.data.data;
+			else if (Array.isArray(payload)) products.value = payload;
+			else if (Array.isArray(res?.data?.products))
+				products.value = res.data.products;
+			else products.value = payload?.products ?? payload?.items ?? [];
+
+			// normalize images array
+			products.value.forEach((p) => {
+				try {
+					if (Array.isArray(p.images)) {
+						p.images = p.images
+							.map((it) => {
+								if (!it) return null;
+								if (typeof it === "string") return it;
+								if (typeof it === "object")
+									return it.url || it.path || it.file || null;
+								return null;
+							})
+							.filter(Boolean);
+					} else if (p.image && typeof p.image === "string")
+						p.images = [p.image];
+					else if (p.image_url && typeof p.image_url === "string")
+						p.images = [p.image_url];
+					else p.images = [];
+				} catch (e) {
+					p.images = [];
+				}
+			});
+
+			const metaTotal =
+				res?.data?.meta?.total ??
+				res?.data?.data?.meta?.total ??
+				res?.data?.total ??
+				res?.data?.count ??
+				null;
+			if (typeof metaTotal === "number") total.value = metaTotal;
+			else {
+				const hdr =
+					res?.headers?.["x-total-count"] ?? res?.headers?.["X-Total-Count"];
+				const parsedHdr = hdr ? parseInt(hdr, 10) : NaN;
+				total.value = !isNaN(parsedHdr) ? parsedHdr : products.value.length;
+			}
+		} catch (err) {
+			console.error(err);
+			error.value =
+				err?.response?.data?.message ||
+				err.message ||
+				"Failed to load products";
+			products.value = [];
+			total.value = 0;
+		} finally {
+			loading.value = false;
+		}
 	}
 
-	function onCancel() {
-		emit("cancel");
+	/* fetch categories */
+	const categories = ref([]);
+	const loadingCategories = ref(false);
+	async function fetchCategories() {
+		loadingCategories.value = true;
+		try {
+			const res = await axios.get("/seller/categories");
+			const payload = res?.data?.data ?? res?.data ?? res;
+			if (Array.isArray(payload)) categories.value = payload;
+			else if (Array.isArray(res?.data)) categories.value = res.data;
+			else if (Array.isArray(res?.data?.data)) categories.value = res.data.data;
+			else categories.value = payload?.categories ?? payload?.items ?? [];
+		} catch (err) {
+			console.error("Failed to load categories", err);
+			categories.value = [];
+		} finally {
+			loadingCategories.value = false;
+		}
 	}
+
+	/* displayedProducts: search + sort (client-side) */
+	const displayedProducts = computed(() => {
+		const arr = Array.isArray(products.value) ? [...products.value] : [];
+		const q = (search.value || "").trim().toLowerCase();
+
+		const filtered = q
+			? arr.filter((p) => {
+					const name = (p.name || "").toString().toLowerCase();
+					const desc = (p.description || "").toString().toLowerCase();
+					return name.includes(q) || desc.includes(q);
+			  })
+			: arr;
+
+		if (sortBy.value === "newest")
+			return filtered.sort(
+				(a, b) => new Date(b.created_at) - new Date(a.created_at)
+			);
+		return filtered.sort(
+			(a, b) => new Date(a.created_at) - new Date(b.created_at)
+		);
+	});
+
+	/* single product */
+	async function fetchProduct(id) {
+		try {
+			const res = await axios.get(`/seller/products/${id}`);
+			return res?.data?.data ?? res?.data ?? null;
+		} catch (err) {
+			console.error("Failed to fetch product", err);
+			throw err;
+		}
+	}
+
+	/* open/edit/reset */
+	function resetForm() {
+		productForm.name = "";
+		productForm.description = "";
+		productForm.price = 0;
+		productForm.is_approved = false;
+		productForm.is_blocked = false;
+		productForm.category_id = null;
+		Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
+		modalError.value = null;
+		selectedFiles.value = [];
+		imagePreviews.value.forEach((url) => URL.revokeObjectURL(url));
+		imagePreviews.value = [];
+		existingImages.value = [];
+		deleteExistingList.value = [];
+	}
+
+	function openCreateModal() {
+		editingProductId.value = null;
+		resetForm();
+		showModal.value = true;
+	}
+
+	async function openEditModal(prod) {
+		editingProductId.value = prod.id;
+		resetForm();
+		modalError.value = null;
+		showModal.value = true;
+		try {
+			const data = await fetchProduct(prod.id);
+			const p = data?.data ?? data ?? prod;
+			productForm.name = p.name ?? prod.name ?? "";
+			productForm.description = p.description ?? prod.description ?? "";
+			productForm.price = p.price ?? prod.price ?? 0;
+			productForm.is_approved = p.is_approved ?? prod.is_approved ?? false;
+			productForm.is_blocked = p.is_blocked ?? prod.is_blocked ?? false;
+			productForm.category_id = p.category_id ?? p.category?.id ?? null;
+			existingImages.value = [];
+			if (Array.isArray(p.images) && p.images.length) {
+				existingImages.value = p.images.map((i) => {
+					// defensive: handle string, object or falsy entries
+					if (!i) return { url: "", removed: false };
+					if (typeof i === "string") return { url: i, removed: false };
+					if (typeof i === "object") {
+						const url =
+							(i && (i.url || i.path || i.file || i.src || i.location)) || "";
+						return { url, removed: false };
+					}
+					return { url: String(i), removed: false };
+				});
+			} else if (p.image)
+				existingImages.value = [{ url: p.image, removed: false }];
+			else if (p.image_url)
+				existingImages.value = [{ url: p.image_url, removed: false }];
+		} catch (err) {
+			modalError.value = "Failed to load product for editing";
+		}
+	}
+
+	/* validate & save */
+	function validateForm() {
+		Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
+		let ok = true;
+		if (!productForm.name || productForm.name.trim().length < 2) {
+			formErrors.name = "Name required (min 2 chars)";
+			ok = false;
+		}
+		if (
+			productForm.price == null ||
+			isNaN(productForm.price) ||
+			Number(productForm.price) < 0
+		) {
+			formErrors.price = "Price must be >= 0";
+			ok = false;
+		}
+		if (!productForm.category_id) {
+			formErrors.category_id = "Please select a category";
+			ok = false;
+		}
+		return ok;
+	}
+
+	async function saveProduct() {
+		if (!validateForm()) {
+			modalError.value = "Fix validation errors";
+			return;
+		}
+
+		savingProduct.value = true;
+		modalError.value = null;
+		Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
+
+		try {
+			const formData = new FormData();
+			formData.append("name", productForm.name);
+			formData.append("description", productForm.description ?? "");
+			formData.append("price", String(productForm.price));
+			formData.append("category_id", String(productForm.category_id ?? ""));
+
+			// append new files
+			if (selectedFiles.value && selectedFiles.value.length) {
+				for (const f of selectedFiles.value) {
+					formData.append("images[]", f, f.name);
+				}
+			}
+
+			// collect removed existing image strings (if any)
+			const removed = existingImages.value
+				.filter((e) => e && e.removed)
+				.map((e) => e.url)
+				.filter(Boolean);
+			if (removed.length) {
+				formData.append("remove_images", JSON.stringify(removed));
+			}
+
+			let res;
+			if (editingProductId.value) {
+				formData.append("_method", "PATCH");
+				res = await axios.post(
+					`/seller/products/${editingProductId.value}`,
+					formData,
+					{
+						headers: { "Content-Type": "multipart/form-data" },
+					}
+				);
+			} else {
+				res = await axios.post("/seller/products", formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+			}
+
+			showToast(
+				editingProductId.value ? "Product updated" : "Product created",
+				"success"
+			);
+			await fetchProducts();
+			closeModal();
+		} catch (err) {
+			console.error("Save product failed - full error:", err);
+			const status = err?.response?.status;
+			const data = err?.response?.data;
+			Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
+			formErrors.images = "";
+
+			if (data && data.errors && typeof data.errors === "object") {
+				if (data.errors["images.0"] && Array.isArray(data.errors["images.0"]))
+					formErrors.images = data.errors["images.0"].join(", ");
+				else if (data.errors["images"] && Array.isArray(data.errors["images"]))
+					formErrors.images = data.errors["images"].join(", ");
+				else
+					Object.entries(data.errors).forEach(([field, val]) => {
+						const mapped = field.replace(/\[\]$/, "");
+						if (mapped in formErrors)
+							formErrors[mapped] = Array.isArray(val)
+								? val.join(", ")
+								: String(val);
+					});
+				if (data.errors["category_id"]) {
+					formErrors.category_id = Array.isArray(data.errors["category_id"])
+						? data.errors["category_id"].join(", ")
+						: String(data.errors["category_id"]);
+				}
+				modalError.value = `Validation failed (${status}). See highlighted fields.`;
+			} else if (data && data.message)
+				modalError.value = `${data.message} (${status ?? ""})`;
+			else modalError.value = err?.message || "Failed to save product";
+		} finally {
+			savingProduct.value = false;
+		}
+	}
+
+	function closeModal() {
+		showModal.value = false;
+		editingProductId.value = null;
+		selectedFiles.value = [];
+		imagePreviews.value.forEach((url) => URL.revokeObjectURL(url));
+		imagePreviews.value = [];
+		existingImages.value = [];
+		resetForm();
+	}
+
+	/* delete */
+	function confirmDeleteModal(prod) {
+		deleteConfirmId.value = prod.id;
+		productToDelete.value = prod;
+	}
+	function cancelDelete() {
+		deleteConfirmId.value = null;
+		productToDelete.value = null;
+	}
+	async function performDelete() {
+		if (!deleteConfirmId.value) return;
+		deleting.value = true;
+		try {
+			await axios.delete(`/seller/products/${deleteConfirmId.value}`);
+			showToast("Product deleted", "success");
+			await fetchProducts();
+		} catch (err) {
+			showToast(
+				err?.response?.data?.message || err?.message || "Delete failed",
+				"error"
+			);
+		} finally {
+			deleting.value = false;
+			cancelDelete();
+		}
+	}
+
+	/* UI helpers */
+	function toggleAll() {
+		if (selectAll.value)
+			selected.value = (products.value || []).map((p) => p.id);
+		else selected.value = [];
+	}
+	function prevPage() {
+		if (currentPage.value > 1) {
+			currentPage.value--;
+			fetchProducts();
+		}
+	}
+	function nextPage() {
+		if (currentPage.value < totalPages.value) {
+			currentPage.value++;
+			fetchProducts();
+		}
+	}
+	function onPerPageChange() {
+		currentPage.value = 1;
+		fetchProducts();
+	}
+	function onSearch() {
+		currentPage.value = 1;
+	}
+
+	/* lifecycle */
+	watch([currentPage, perPage], () => fetchProducts());
+	onMounted(() => {
+		fetchProducts();
+		fetchCategories();
+	});
 </script>
 
 <style scoped>
-	.product-form-card {
-		max-width: 700px;
-		margin: 32px auto;
-		padding: 32px 24px 24px 24px;
-		border-radius: 18px;
-		background: #fff;
-		box-shadow: 0 4px 24px 0 rgba(59, 130, 246, 0.07);
+	/* subtle UI polish */
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
-	.form-title {
-		font-size: 1.6rem;
-		font-weight: 700;
-		color: #1e293b;
-		display: flex;
-		align-items: center;
-		margin-bottom: 8px;
-		letter-spacing: -1px;
+	.scale-fade-enter-from {
+		opacity: 0;
+		transform: scale(0.96);
 	}
-	.img-thumb {
-		width: 90px;
-		height: 90px;
-		object-fit: cover;
-		border-radius: 10px;
-		border: 1.5px solid #e5e7eb;
-		box-shadow: 0 2px 8px 0 rgba(59, 130, 246, 0.08);
-		background: #f8fafc;
-		margin-bottom: 2px;
+	.scale-fade-enter-to {
+		opacity: 1;
+		transform: scale(1);
 	}
-	.img-remove-btn {
-		position: absolute;
-		top: 2px;
-		right: 2px;
-		z-index: 2;
-		opacity: 0.85;
+	.scale-fade-enter-active {
+		transition: all 0.18s ease-out;
 	}
-	.img-add-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: #f1f5f9;
-		border: 1.5px dashed #cbd5e1;
-		color: #2563eb;
-		transition: background 0.15s;
+	.scale-fade-leave-active {
+		transition: all 0.14s ease-in;
+		opacity: 0;
+		transform: scale(0.98);
 	}
-	.img-add-btn:hover {
-		background: #e0e7ff;
+	.fade-enter-from,
+	.fade-leave-to {
+		opacity: 0;
 	}
-	@media (max-width: 600px) {
-		.product-form-card {
-			max-width: 100% !important;
-			padding: 0.5rem !important;
+	.fade-enter-to,
+	.fade-leave-from {
+		opacity: 1;
+	}
+	.fade-enter-active,
+	.fade-leave-active {
+		transition: opacity 0.22s ease;
+	}
+
+	/* premium button shadows */
+	button {
+		transition: all 0.12s ease;
+	}
+
+	/* keep a gentle spacing from the sidebar when nested inside SellerLayout */
+	.content-with-sidebar {
+		width: 100%;
+		padding-left: 1rem; /* small interior padding */
+	}
+
+	/* optional: add extra left gap on larger screens to visually separate from sidebar */
+	@media (min-width: 1024px) {
+		.content-with-sidebar {
+			padding-left: 1.5rem;
 		}
 	}
 </style>
