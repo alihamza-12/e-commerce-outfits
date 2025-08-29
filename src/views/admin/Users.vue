@@ -1,10 +1,10 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-md dark:bg-gray-900 transition-colors duration-300">
     <!-- Header -->
     <div class="row items-center justify-between q-mb-md">
       <div>
-        <h1 class="text-h4 text-weight-bold text-primary">User Management</h1>
-        <p class="text-subtitle2 text-grey-7">Manage and monitor all platform users</p>
+        <h1 class="text-h4 text-weight-bold dark:text-white">User Management</h1>
+        <p class="text-subtitle2 text-grey-7 dark:text-gray-400">Manage and monitor all platform users</p>
       </div>
       <div class="row q-gutter-sm">
         <q-btn 
@@ -14,6 +14,7 @@
           color="primary" 
           unelevated
           :loading="loading"
+          class="hover:scale-105 transition-transform duration-200"
         />
       </div>
     </div>
@@ -21,13 +22,13 @@
     <!-- Stats Cards -->
     <div class="row q-col-gutter-md q-mb-md">
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="blue-1" text-color="primary" icon="people" />
+              <q-avatar color="blue-1" text-color="primary" icon="people" class="dark:bg-blue-900 dark:text-blue-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ totalUsers }}</div>
-                <div class="text-caption text-grey-7">Total Users</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ totalUsers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Total Users</div>
               </div>
             </div>
           </q-card-section>
@@ -35,13 +36,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="green-1" text-color="positive" icon="check_circle" />
+              <q-avatar color="green-1" text-color="positive" icon="check_circle" class="dark:bg-green-900 dark:text-green-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ activeUsers }}</div>
-                <div class="text-caption text-grey-7">Active Users</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ activeUsers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Active Users</div>
               </div>
             </div>
           </q-card-section>
@@ -49,13 +50,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="red-1" text-color="negative" icon="block" />
+              <q-avatar color="red-1" text-color="negative" icon="block" class="dark:bg-red-900 dark:text-red-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ blockedUsers }}</div>
-                <div class="text-caption text-grey-7">Blocked Users</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ blockedUsers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Blocked Users</div>
               </div>
             </div>
           </q-card-section>
@@ -63,13 +64,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="purple-1" text-color="purple" icon="schedule" />
+              <q-avatar color="purple-1" text-color="purple" icon="schedule" class="dark:bg-purple-900 dark:text-purple-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ recentUsers }}</div>
-                <div class="text-caption text-grey-7">New This Week</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ recentUsers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">New This Week</div>
               </div>
             </div>
           </q-card-section>
@@ -78,7 +79,7 @@
     </div>
 
     <!-- Filters -->
-    <q-card flat bordered class="q-mb-md">
+    <q-card flat bordered class="q-mb-md dark:bg-gray-800 dark:border-gray-700">
       <q-card-section>
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-3">
@@ -88,9 +89,10 @@
               dense
               outlined
               clearable
+              class="dark:bg-gray-700 dark:text-white"
             >
               <template v-slot:prepend>
-                <q-icon name="search" />
+                <q-icon name="search" class="dark:text-gray-300" />
               </template>
             </q-input>
           </div>
@@ -104,6 +106,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -116,6 +119,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -128,6 +132,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -135,7 +140,7 @@
     </q-card>
 
     <!-- Users Table -->
-    <q-card flat bordered>
+    <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700">
       <q-card-section>
         <q-table
           :rows="paginatedUsers"
@@ -146,6 +151,7 @@
           :pagination="pagination"
           flat
           bordered
+          class="dark:bg-gray-800"
         >
           <template v-slot:loading>
             <q-inner-loading showing color="primary" />
@@ -153,7 +159,7 @@
 
           <template v-slot:body-cell-avatar="props">
             <q-td :props="props">
-              <q-avatar size="42px">
+              <q-avatar size="42px" class="border-2 border-gray-300 dark:border-gray-600">
                 <img :src="props.row.avatar || 'https://cdn.quasar.dev/img/boy-avatar.png'" />
               </q-avatar>
             </q-td>
@@ -165,6 +171,7 @@
                 :color="props.row.status === 'active' ? 'positive' : 'negative'"
                 text-color="white"
                 size="sm"
+                class="font-medium"
               >
                 {{ props.row.status }}
               </q-chip>
@@ -172,7 +179,7 @@
           </template>
 
           <template v-slot:body-cell-createdAt="props">
-            <q-td :props="props">
+            <q-td :props="props" class="dark:text-gray-300">
               {{ formatDate(props.row.createdAt) }}
             </q-td>
           </template>
@@ -186,6 +193,7 @@
                   :color="props.row.status === 'blocked' ? 'positive' : 'negative'"
                   size="sm"
                   unelevated
+                  class="hover:scale-105 transition-transform duration-200"
                 />
                 <q-btn
                   @click="viewUserDetails(props.row)"
@@ -194,6 +202,7 @@
                   size="sm"
                   round
                   flat
+                  class="hover:bg-primary hover:text-white transition-colors duration-200"
                 />
               </div>
             </q-td>
@@ -202,14 +211,14 @@
           <template v-slot:no-data>
             <div class="full-width row flex-center q-pa-md">
               <q-icon name="warning" size="md" color="warning" />
-              <span class="q-ml-sm">No users found</span>
+              <span class="q-ml-sm dark:text-gray-300">No users found</span>
             </div>
           </template>
         </q-table>
       </q-card-section>
 
       <q-card-actions align="between">
-        <div class="text-caption text-grey-7">
+        <div class="text-caption text-grey-7 dark:text-gray-400">
           Showing {{ startIndex + 1 }} to {{ Math.min(endIndex, filteredUsers.length) }} of {{ filteredUsers.length }} results
         </div>
         <q-pagination
@@ -219,20 +228,21 @@
           direction-links
           boundary-links
           @update:model-value="onPageChange"
+          class="dark:text-white"
         />
       </q-card-actions>
     </q-card>
 
     <!-- Confirmation Dialog -->
     <q-dialog v-model="showConfirmDialog" persistent>
-      <q-card style="min-width: 350px">
+      <q-card style="min-width: 350px" class="dark:bg-gray-800 dark:border-gray-700">
         <q-card-section class="row items-center">
           <q-avatar :icon="confirmIcon" :color="confirmColor" text-color="white" />
-          <span class="q-ml-sm">{{ confirmMessage }}</span>
+          <span class="q-ml-sm dark:text-white">{{ confirmMessage }}</span>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Cancel" color="primary" v-close-popup class="dark:text-white" />
           <q-btn 
             flat 
             :label="confirmAction" 
@@ -246,75 +256,75 @@
 
     <!-- User Details Dialog -->
     <q-dialog v-model="showUserDetails" persistent>
-      <q-card style="min-width: 400px">
+      <q-card style="min-width: 400px" class="dark:bg-gray-800 dark:border-gray-700">
         <q-card-section>
-          <div class="text-h6">User Details</div>
+          <div class="text-h6 dark:text-white">User Details</div>
         </q-card-section>
 
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-12">
-              <q-avatar size="100px" class="q-mx-auto block">
+              <q-avatar size="100px" class="q-mx-auto block border-2 border-gray-300 dark:border-gray-600">
                 <img :src="selectedUser?.avatar || 'https://cdn.quasar.dev/img/boy-avatar.png'" />
               </q-avatar>
             </div>
             <div class="col-12">
-              <div class="text-h6 text-center">{{ selectedUser?.name }}</div>
-              <div class="text-subtitle2 text-center text-grey-7">{{ selectedUser?.email }}</div>
+              <div class="text-h6 text-center dark:text-white">{{ selectedUser?.name }}</div>
+              <div class="text-subtitle2 text-center text-grey-7 dark:text-gray-400">{{ selectedUser?.email }}</div>
             </div>
             <div class="col-12">
-              <q-list dense>
-                <q-item>
+              <q-list dense class="dark:bg-gray-700">
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Customer ID</q-item-label>
-                    <q-item-label>{{ selectedUser?.customer_id || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Customer ID</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.customer_id || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>User ID</q-item-label>
-                    <q-item-label>{{ selectedUser?.user_id || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">User ID</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.user_id || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Phone</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.phone || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Phone</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.phone || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Address</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.address || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Address</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.address || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>City</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.city || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">City</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.city || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>State</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.state || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">State</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.state || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Postal Code</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.postal_code || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Postal Code</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.postal_code || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Country</q-item-label>
-                    <q-item-label>{{ selectedUser?.profile?.country || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Country</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.profile?.country || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Status</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Status</q-item-label>
                     <q-item-label>
                       <q-chip
                         :color="selectedUser?.status === 'active' ? 'positive' : 'negative'"
@@ -326,10 +336,10 @@
                     </q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Blocked Status</q-item-label>
-                    <q-item-label>{{ selectedUser?.is_blocked ? 'Yes' : 'No' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Blocked Status</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedUser?.is_blocked ? 'Yes' : 'No' }}</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
@@ -338,7 +348,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup />
+          <q-btn flat label="Close" color="primary" v-close-popup class="dark:text-white" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -590,6 +600,6 @@ onMounted(() => {
 
 <style scoped>
 .q-page {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: none;
 }
 </style>

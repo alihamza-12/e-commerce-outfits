@@ -1,10 +1,10 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-md body--dark transition-colors duration-300">
     <!-- Header -->
     <div class="row items-center justify-between q-mb-md">
       <div>
-        <h1 class="text-h4 text-weight-bold text-primary">Seller Management</h1>
-        <p class="text-subtitle2 text-grey-7">Manage and monitor all platform sellers</p>
+        <h1 class="text-h4 text-weight-bold  dark:text-white">Seller Management</h1>
+        <p class="text-subtitle2 text-grey-7 dark:text-gray-400">Manage and monitor all platform sellers</p>
       </div>
       <div class="row q-gutter-sm">
         <q-btn 
@@ -14,6 +14,7 @@
           color="primary" 
           unelevated
           :loading="loading"
+          class="hover:scale-105 transition-transform duration-200"
         />
       </div>
     </div>
@@ -21,13 +22,13 @@
     <!-- Stats Cards -->
     <div class="row q-col-gutter-md q-mb-md">
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="blue-1" text-color="primary" icon="store" />
+              <q-avatar color="blue-1" text-color="primary" icon="store" class="dark:bg-blue-900 dark:text-blue-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ totalSellers }}</div>
-                <div class="text-caption text-grey-7">Total Sellers</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ totalSellers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Total Sellers</div>
               </div>
             </div>
           </q-card-section>
@@ -35,13 +36,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="green-1" text-color="positive" icon="verified" />
+              <q-avatar color="green-1" text-color="positive" icon="verified" class="dark:bg-green-900 dark:text-green-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ verifiedSellers }}</div>
-                <div class="text-caption text-grey-7">Verified Sellers</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ verifiedSellers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Verified Sellers</div>
               </div>
             </div>
           </q-card-section>
@@ -49,13 +50,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="orange-1" text-color="orange" icon="pending" />
+              <q-avatar color="orange-1" text-color="orange" icon="pending" class="dark:bg-orange-900 dark:text-orange-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ pendingSellers }}</div>
-                <div class="text-caption text-grey-7">Pending Approval</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ pendingSellers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Pending Approval</div>
               </div>
             </div>
           </q-card-section>
@@ -63,13 +64,13 @@
       </div>
 
       <div class="col-12 col-md-3">
-        <q-card flat bordered>
+        <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
           <q-card-section>
             <div class="row items-center">
-              <q-avatar color="red-1" text-color="negative" icon="block" />
+              <q-avatar color="red-1" text-color="negative" icon="block" class="dark:bg-red-900 dark:text-red-200" />
               <div class="q-ml-md">
-                <div class="text-h6 text-weight-bold">{{ suspendedSellers }}</div>
-                <div class="text-caption text-grey-7">Suspended</div>
+                <div class="text-h6 text-weight-bold dark:text-white">{{ suspendedSellers }}</div>
+                <div class="text-caption text-grey-7 dark:text-gray-400">Suspended</div>
               </div>
             </div>
           </q-card-section>
@@ -78,7 +79,7 @@
     </div>
 
     <!-- Filters -->
-    <q-card flat bordered class="q-mb-md">
+    <q-card flat bordered class="q-mb-md dark:bg-gray-800 dark:border-gray-700">
       <q-card-section>
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-3">
@@ -88,9 +89,10 @@
               dense
               outlined
               clearable
+              class="dark:bg-gray-700 dark:text-white"
             >
               <template v-slot:prepend>
-                <q-icon name="search" />
+                <q-icon name="search" class="dark:text-gray-300" />
               </template>
             </q-input>
           </div>
@@ -104,6 +106,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -116,6 +119,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -128,6 +132,7 @@
               outlined
               emit-value
               map-options
+              class="dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -135,7 +140,7 @@
     </q-card>
 
     <!-- Sellers Table -->
-    <q-card flat bordered>
+    <q-card flat bordered class="dark:bg-gray-800 dark:border-gray-700">
       <q-card-section>
         <q-table
           :rows="paginatedSellers"
@@ -195,6 +200,14 @@
                   flat
                 />
                 <q-btn
+                  @click="viewSellerProducts(props.row)"
+                  icon="inventory_2"
+                  color="info"
+                  size="sm"
+                  round
+                  flat
+                />
+                <q-btn
                   v-if="!props.row.is_approved"
                   @click="approveSeller(props.row)"
                   label="Approve"
@@ -232,7 +245,7 @@
       </q-card-section>
 
       <q-card-actions align="between">
-        <div class="text-caption text-grey-7">
+        <div class="text-caption text-grey-7 dark:text-gray-400">
           Showing {{ startIndex + 1 }} to {{ Math.min(endIndex, filteredSellers.length) }} of {{ filteredSellers.length }} results
         </div>
         <q-pagination
@@ -242,20 +255,21 @@
           direction-links
           boundary-links
           @update:model-value="onPageChange"
+          class="dark:text-white"
         />
       </q-card-actions>
     </q-card>
 
     <!-- Confirmation Dialog -->
     <q-dialog v-model="showConfirmDialog" persistent>
-      <q-card style="min-width: 350px">
+      <q-card style="min-width: 350px" class="dark:bg-gray-800 dark:border-gray-700">
         <q-card-section class="row items-center">
           <q-avatar :icon="confirmIcon" :color="confirmColor" text-color="white" />
-          <span class="q-ml-sm">{{ confirmMessage }}</span>
+          <span class="q-ml-sm dark:text-white">{{ confirmMessage }}</span>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Cancel" color="primary" v-close-popup class="dark:text-white" />
           <q-btn 
             flat 
             :label="confirmAction" 
@@ -269,9 +283,9 @@
 
     <!-- Seller Details Dialog -->
     <q-dialog v-model="showSellerDetails" persistent>
-      <q-card style="min-width: 500px">
+      <q-card style="min-width: 500px" class="dark:bg-gray-800 dark:border-gray-700">
         <q-card-section>
-          <div class="text-h6">Seller Details</div>
+          <div class="text-h6 dark:text-white">Seller Details</div>
         </q-card-section>
 
         <q-card-section v-if="selectedSeller">
@@ -282,38 +296,38 @@
               </q-avatar>
             </div>
             <div class="col-12">
-              <div class="text-h6 text-center">{{ selectedSeller.businessName }}</div>
-              <div class="text-subtitle2 text-center text-grey-7">{{ selectedSeller.email }}</div>
+              <div class="text-h6 text-center dark:text-white">{{ selectedSeller.businessName }}</div>
+              <div class="text-subtitle2 text-center text-grey-7 dark:text-gray-400">{{ selectedSeller.email }}</div>
             </div>
             <div class="col-12">
-              <q-list dense>
-                <q-item>
+              <q-list dense class="dark:bg-gray-700">
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Business Name</q-item-label>
-                    <q-item-label>{{ selectedSeller.businessName }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Business Name</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedSeller.businessName }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Email</q-item-label>
-                    <q-item-label>{{ selectedSeller.email }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Email</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedSeller.email }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Phone</q-item-label>
-                    <q-item-label>{{ selectedSeller.phone || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Phone</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedSeller.phone || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Business Type</q-item-label>
-                    <q-item-label>{{ selectedSeller.businessType || 'N/A' }}</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Business Type</q-item-label>
+                    <q-item-label class="dark:text-white">{{ selectedSeller.businessType || 'N/A' }}</q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item class="dark:bg-gray-700">
                   <q-item-section>
-                    <q-item-label caption>Status</q-item-label>
+                    <q-item-label caption class="dark:text-gray-300">Status</q-item-label>
                     <q-item-label>
                       <q-chip
                         :color="getStatusColor(selectedSeller.status)"
@@ -325,17 +339,17 @@
                     </q-item-label>
                   </q-item-section>
                 </q-item>
-                <q-item>
-                  <q-item-label caption>Products</q-item-label>
-                  <q-item-label>{{ selectedSeller.productCount || 0 }}</q-item-label>
+                <q-item class="dark:bg-gray-700">
+                  <q-item-label caption class="dark:text-gray-300">Products</q-item-label>
+                  <q-item-label class="dark:text-white">{{ selectedSeller.productCount || 0 }}</q-item-label>
                 </q-item>
-                <q-item>
-                  <q-item-label caption>Revenue</q-item-label>
-                  <q-item-label>${{ formatCurrency(selectedSeller.revenue || 0) }}</q-item-label>
+                <q-item class="dark:bg-gray-700">
+                  <q-item-label caption class="dark:text-gray-300">Revenue</q-item-label>
+                  <q-item-label class="dark:text-white">${{ formatCurrency(selectedSeller.revenue || 0) }}</q-item-label>
                 </q-item>
-                <q-item>
-                  <q-item-label caption>Joined</q-item-label>
-                  <q-item-label>{{ formatDate(selectedSeller.createdAt) }}</q-item-label>
+                <q-item class="dark:bg-gray-700">
+                  <q-item-label caption class="dark:text-gray-300">Joined</q-item-label>
+                  <q-item-label class="dark:text-white">{{ formatDate(selectedSeller.createdAt) }}</q-item-label>
                 </q-item>
               </q-list>
             </div>
@@ -343,7 +357,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup />
+          <q-btn flat label="Close" color="primary" v-close-popup class="dark:text-white" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -353,6 +367,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 import adminApi from '@/services/adminApi'
 
 const $q = useQuasar()
@@ -660,7 +675,12 @@ const toggleBlockStatus = async (seller) => {
 
 const viewSellerProducts = (seller) => {
   // Navigate to seller products view
-  console.log('View products for seller:', seller.businessName)
+  if (seller && seller.id) {
+    console.log('Navigating to Seller Products with ID:', seller.id); // Debug log
+    router.push({ name: 'SellerProducts', params: { sellerId: seller.id } });
+  } else {
+    console.error('Seller ID is missing');
+  }
 }
 
 const getStatusColor = (status) => {
@@ -719,7 +739,7 @@ onMounted(() => {
 
 <style scoped>
 .q-page {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: none;
 }
 </style>
 

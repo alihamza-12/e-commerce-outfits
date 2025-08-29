@@ -12,13 +12,13 @@ import '@quasar/extras/material-icons/material-icons.css'
 import './assets/main.css'
 
 // Quasar
-import { Quasar, Notify } from 'quasar'
+import { Quasar, Notify, Dialog } from 'quasar'
 
 const app = createApp(App)
 const pinia = createPinia()
 
 app.use(Quasar, {
-  plugins: { Notify },
+  plugins: { Notify, Dialog },
   config: {
     brand: {
       primary: '#1976D2',

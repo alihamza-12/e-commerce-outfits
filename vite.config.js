@@ -7,7 +7,10 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: { transformAssetUrls },
+      compilerOptions: {
+        plugins: ['@babel/plugin-proposal-decorators', { legacy: true }]
+      }
     }),
     quasar({
       sassVariables: resolve(__dirname, 'src/quasar-variables.sass')

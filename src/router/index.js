@@ -93,8 +93,14 @@ const routes = [
       },
       {
         path: 'seller-products',
+        name: 'SellerProductsList',
+        component: () => import('@/views/admin/SellerProducts.vue'),
+      },
+      {
+        path: 'sellers/:sellerId/products',
         name: 'SellerProducts',
         component: () => import('@/views/admin/SellerProducts.vue'),
+        props: true,
       },
       {
         path: 'returns-refunds',
