@@ -198,7 +198,8 @@ async function fetchProfile() {
   }
 }
 
-function toggle() {
+function toggle(event) {
+  event.stopPropagation(); // Prevent event from bubbling up to parent elements
   open.value = !open.value;
   if (open.value) {
     fetchProfile();

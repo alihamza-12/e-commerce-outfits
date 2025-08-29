@@ -29,7 +29,7 @@
           <q-item v-for="item in cartStore.cartItems" :key="item.id" class="q-pa-md">
             <q-item-section avatar>
               <q-img 
-                :src="item.image" 
+                :src="resolveImageUrl(item.image)" 
                 :alt="item.title" 
                 width="60px" 
                 height="60px" 
@@ -110,6 +110,24 @@ const $q = useQuasar()
 const cartStore = useCartStore()
 const showCartModal = ref(false)
 const forceRenderKey = ref(0)
+
+// image helpers (robust)
+function resolveImageUrl(u) {
+    if (!u) return 'https://cdn.quasar.dev/img/boy-avatar.png';
+    if (typeof u !== "string") return 'https://cdn.quasar.dev/img/boy-avatar.png';
+    const s = u.trim();
+    if (!s) return 'https://cdn.quasar.dev/img/boy-avatar.png';
+    if (/^https?:\/\//i.test(s)) return s;
+
+    // Explicit base URL for images
+    const baseUrl = 'http://13.60.188.147/';
+
+    if (s.startsWith("/")) return `${baseUrl}${s.replace(/^\/+/, "")}`;
+    if (/^(storage|uploads|public)\//i.test(s) || s.includes("storage/")) {
+        return `${baseUrl}${s.replace(/^\/+/, "")}`;
+    }
+    return `${baseUrl}storage/${s.replace(/^\/+/, "")}`;
+}
 
 // Debug logging
 const debugLog = (message, data = null) => {

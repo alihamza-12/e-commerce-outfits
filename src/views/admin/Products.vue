@@ -308,9 +308,12 @@ const formatCurrency = (amount) => {
 }
 
 const getProductImage = (product) => {
+  // Base URL for images
+  const baseUrl = 'http://13.60.188.147/'
+
   // Get the first image if available, otherwise use placeholder
   const firstImage = product.images?.[0]?.image_path
-  return firstImage || 'https://cdn.quasar.dev/img/boy-avatar.png'
+  return firstImage ? baseUrl + firstImage : 'https://cdn.quasar.dev/img/boy-avatar.png'
 }
 
 const getStatusColor = (product) => {

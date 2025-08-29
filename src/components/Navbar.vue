@@ -90,7 +90,7 @@
 
 			<!-- Mobile Toggle Button (main branch version) -->
 			<q-btn flat dense round :icon="drawer ? 'close' : 'menu'" class="mobile-menu-btn"
-				@click="toggleDrawer" ref="menuButton" />
+				@click="drawer ? closeDrawer() : toggleDrawer()" ref="menuButton" />
 		</q-toolbar>
 
 		<!-- Mobile Dropdown Menu (main branch version) -->
@@ -245,6 +245,10 @@ function toggleDrawer() {
 	drawer.value = !drawer.value;
 }
 
+function closeDrawer() {
+	drawer.value = false;
+}
+
 // Helper functions for mobile dropdown menu
 function getNavIcon(label) {
 	const iconMap = {
@@ -269,6 +273,11 @@ function getNavSubtitle(label) {
 	return subtitleMap[label] || "";
 }
 </script>
+
+
+
+
+
 <style scoped>
     .navbar-root {
         background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);

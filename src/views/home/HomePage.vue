@@ -174,161 +174,131 @@
 </template>
 
 <script setup>
-	import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useCartStore } from '../../stores/cart'
+import { useProductStore } from '../../stores/product'
 
-	// Featured Categories
-	const featuredCategories = [
-		{
-			name: "Men",
-			image:
-				"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=200&q=80",
-			link: "/men",
-		},
-		{
-			name: "Women",
-			image:
-				"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
-			link: "/women",
-		},
-		{
-			name: "Kids Fashion",
-			image:
-				"https://images.unsplash.com/photo-1546226271-450e37cf85d0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8a2lkcyUyMHNob3BwaW5nfGVufDB8fDB8fHww",
-			link: "/kids",
-		},
-		{
-			name: "Accessories",
-			image:
-				"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80",
-			link: "/shop",
-		}
+const cartStore = useCartStore()
+const productStore = useProductStore()
+
+// Featured Categories
+const featuredCategories = [
+	{
+		name: "Men",
+		image:
+			"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=200&q=80",
+		link: "/men",
+	},
+	{
+		name: "Women",
+		image:
+			"https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
+		link: "/women",
+	},
+	{
+		name: "Kids Fashion",
+		image:
+			"https://images.unsplash.com/photo-1546226271-450e37cf85d0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8a2lkcyUyMHNob3BwaW5nfGVufDB8fDB8fHww",
+		link: "/kids",
+	},
+	{
+		name: "Accessories",
+		image:
+			"https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80",
+		link: "/shop",
+	}
+];
+
+const trendingProducts = ref([])
+
+// Testimonials (dummy)
+const testimonials = [
+	{
+		name: "Ayesha Khan",
+		avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+		text: "Amazing quality and fast delivery! I love shopping here.",
+	},
+	{
+		name: "Ali Raza",
+		avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+		text: "Great variety and best prices. Highly recommended!",
+	},
+	{
+		name: "Sara Malik",
+		avatar: "https://randomuser.me/api/portraits/women/65.jpg",
+		text: "Customer service is top-notch. Will shop again!",
+	},
+];
+
+// Newsletter
+const newsletterEmail = ref("");
+const newsletterMsg = ref("");
+
+function subscribeNewsletter() {
+	if (newsletterEmail.value) {
+		newsletterMsg.value = "Thank you for subscribing!";
+		newsletterEmail.value = "";
+		setTimeout(() => (newsletterMsg.value = ""), 3000);
+	}
+}
+
+// Cart logic
+function addToCart(product) {
+	// Ensure product has all required fields
+	const cartProduct = {
+		id: product.name.toLowerCase().replace(/\s+/g, '-'), // Generate simple ID from name
+		title: product.name,
+		price: product.price,
+		image: product.image,
+		brand: product.category,
+		quantity: 1
+	}
+	cartStore.addToCart(cartProduct)
+}
+
+onMounted(async () => {
+	try {
+		const response = await productStore.fetchProducts()
+		console.log("API response:", response)
 		
-	];
-
-	// Trending Products (dummy, you can expand)
-	const trendingProducts = [
-		{
-			name: "Men's T-Shirt",
-			description: "Black cotton T-Shirt",
-			price: 799,
-			size: "M",
-			color: "Black",
-			category: "Men",
-			image: "https://via.placeholder.com/300x300?text=T-Shirt",
-		},
-		{
-			name: "Women's Dress",
-			description: "Floral summer dress",
-			price: 1499,
-			size: "M",
-			color: "Pink",
-			category: "Women",
-			image: "https://via.placeholder.com/300x300?text=Dress",
-		},
-		{
-			name: "Sneakers",
-			description: "Casual sneakers",
-			price: 1999,
-			size: "42",
-			color: "White",
-			category: "Men",
-			image: "https://via.placeholder.com/300x300?text=Shoes",
-		},
-		{
-			name: "Handbag",
-			description: "Leather handbag",
-			price: 2599,
-			size: "Medium",
-			color: "Brown",
-			category: "Women",
-			image: "https://via.placeholder.com/300x300?text=Bag",
-		},
-		{
-			name: "Smart Watch",
-			description: "Latest smartwatch",
-			price: 3499,
-			size: "One Size",
-			color: "Black",
-			category: "Accessories",
-			image: "https://via.placeholder.com/300x300?text=Watch",
-		},
-		{
-			name: "Perfume",
-			description: "Long-lasting fragrance",
-			price: 1399,
-			size: "100ml",
-			color: "N/A",
-			category: "Accessories",
-			image: "https://via.placeholder.com/300x300?text=Perfume",
-		},
-		{
-			name: "Women's Heels",
-			description: "Elegant black heels for parties.",
-			price: 1799,
-			size: "38",
-			color: "Black",
-			category: "Women",
-			image: "https://via.placeholder.com/300x300?text=Heels",
-		},
-		{
-			name: "Men's Jacket",
-			description: "Winter denim jacket",
-			price: 2499,
-			size: "L",
-			color: "Blue",
-			category: "Men",
-			image: "https://via.placeholder.com/300x300?text=Jacket",
-		},
-	];
-
-	// Testimonials (dummy)
-	const testimonials = [
-		{
-			name: "Ayesha Khan",
-			avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-			text: "Amazing quality and fast delivery! I love shopping here.",
-		},
-		{
-			name: "Ali Raza",
-			avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-			text: "Great variety and best prices. Highly recommended!",
-		},
-		{
-			name: "Sara Malik",
-			avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-			text: "Customer service is top-notch. Will shop again!",
-		},
-	];
-
-	// Newsletter
-	const newsletterEmail = ref("");
-	const newsletterMsg = ref("");
-
-	function subscribeNewsletter() {
-		if (newsletterEmail.value) {
-			newsletterMsg.value = "Thank you for subscribing!";
-			newsletterEmail.value = "";
-			setTimeout(() => (newsletterMsg.value = ""), 3000);
+		// Check if response.data exists and response.data.data is an array
+		if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
+			trendingProducts.value = response.data.data.map(product => {
+				console.log("Processing product:", product)
+				
+				// Get the first image from the images array, or use placeholder
+				let imageUrl = "https://via.placeholder.com/300x300?text=No+Image"
+				if (product.images && product.images.length > 0) {
+					const firstImage = product.images[0]
+					// Check if image_path is valid (not just "storage/")
+					if (firstImage.image_path && firstImage.image_path !== "storage/") {
+						// Construct full image URL (assuming the API returns relative paths)
+						imageUrl = `http://13.60.188.147/${firstImage.image_path}`
+					}
+				}
+				
+				// Map API product structure to UI structure
+				return {
+					id: product.id,
+					name: product.name,
+					description: product.description,
+					price: product.price,
+					image: imageUrl,
+					category: product.category_id === 1 ? "Men" : product.category_id === 2 ? "Women" : "Accessories",
+					size: "M", // Default size
+					color: "Black" // Default color
+				}
+			})
+			console.log("Mapped trending products:", trendingProducts.value)
+		} else {
+			console.error("Invalid API response structure:", response)
+			trendingProducts.value = []
 		}
+	} catch (error) {
+		console.error("Error fetching products:", error)
+		trendingProducts.value = [] // Set empty array on error
 	}
-
-	import { useCartStore } from '../../stores/cart'
-	const cartStore = useCartStore()
-
-	// Cart logic
-	function addToCart(product) {
-		// Ensure product has all required fields
-		const cartProduct = {
-			id: product.name.toLowerCase().replace(/\s+/g, '-'), // Generate simple ID from name
-			title: product.name,
-			price: product.price,
-			image: product.image,
-			brand: product.category,
-			quantity: 1
-		}
-		cartStore.addToCart(cartProduct)
-		// alert(`${product.name} added to cart!`)
-	}
+})
 </script>
 
 <style scoped>
