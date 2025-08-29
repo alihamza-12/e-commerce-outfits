@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import api from '@/services/api'
+import api from '@/api/axios'
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -19,8 +19,13 @@ export const useProductStore = defineStore('product', {
       this.loading = true
       try {
         const response = await api.get('/products', { params })
-        this.products = response.data.products
-        this.pagination = response.data.pagination
+        // API returns products in response.data.data, not response.data.products
+        this.products = response.data.data || []
+        this.pagination = {
+          page: response.data.current_page,
+          limit: response.data.per_page,
+          total: response.data.total
+        }
         return response.data
       } catch (error) {
         throw error

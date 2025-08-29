@@ -149,7 +149,7 @@
                             <q-item v-for="(it, idx) in selectedOrder.items" :key="idx">
                                 <q-item-section avatar>
                                     <q-avatar size="48">
-                                        <img :src="it.image || placeholderImage" alt="product" />
+                                        <img :src="resolveImageUrl(it.image)" alt="product" />
                                     </q-avatar>
                                 </q-item-section>
                                 <q-item-section>
@@ -233,7 +233,49 @@ const sortOptions = ["Newest","Oldest","Amount (High-Low)","Amount (Low-High)"];
 const noDataLabel = "No orders yet.";
 const noResultsLabel = "No orders match your search/filter.";
 
-const placeholderImage = "/src/assets/vue.svg"; // small placeholder
+const placeholderImage = "https://cdn.quasar.dev/img/boy-avatar.png"; // use CDN placeholder
+
+// image helpers (robust)
+function resolveImageUrl(u) {
+    if (!u) {
+        console.log('No image URL provided, using placeholder');
+        return placeholderImage;
+    }
+    if (typeof u !== "string") {
+        console.log('Image URL is not a string, using placeholder');
+        return placeholderImage;
+    }
+    
+    const s = u.trim();
+    if (!s) {
+        console.log('Empty image URL, using placeholder');
+        return placeholderImage;
+    }
+    
+    // If already a full URL, return as is
+    if (/^https?:\/\//i.test(s)) {
+        console.log('Full image URL:', s);
+        return s;
+    }
+
+    // Explicit base URL for images
+    const baseUrl = 'http://13.60.188.147/';
+
+    // Remove leading slashes and handle various path formats
+    const cleanPath = s.replace(/^\/+/, "");
+    
+    // Check if the path already includes storage or similar directories
+    if (/^(storage|uploads|public|images?)\//i.test(cleanPath)) {
+        const resolvedUrl = baseUrl + cleanPath;
+        console.log('Resolved storage image URL:', resolvedUrl);
+        return resolvedUrl;
+    }
+    
+    // Default to storage directory
+    const resolvedUrl = baseUrl + 'storage/' + cleanPath;
+    console.log('Resolved default image URL:', resolvedUrl);
+    return resolvedUrl;
+}
 
 // helper: normalize order shape for table/UI
 function mapOrderForTable(o) {
