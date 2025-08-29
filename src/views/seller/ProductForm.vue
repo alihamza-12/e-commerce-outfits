@@ -130,7 +130,13 @@
 							class="hover:bg-slate-50">
 							<td class="p-4 flex items-start gap-3">
 								<img
-									:src="firstImage(prod)"
+									v-for="imgObj in prod.images"
+									:key="imgObj.id || imgObj.image_path || imgObj"
+									:src="
+										resolveImageUrl(
+											typeof imgObj === 'string' ? imgObj : imgObj.image_path
+										)
+									"
 									@error="(e) => (e.target.src = PLACEHOLDER_IMAGE)"
 									class="w-14 h-14 rounded-lg object-cover border"
 									alt="thumb" />
@@ -356,6 +362,20 @@
 									shown below; click ✕ to remove them from the product.
 								</div>
 
+								<!-- Debug: Show selected image preview -->
+								<div v-if="imagePreviews.length" class="mt-3">
+									<div class="text-xs text-slate-700 mb-1">
+										Selected image preview (for test):
+									</div>
+									<div class="flex gap-2">
+										<img
+											v-for="(p, i) in imagePreviews"
+											:key="'testpv-' + i"
+											:src="p"
+											class="w-24 h-24 object-cover border rounded" />
+									</div>
+								</div>
+
 								<div class="mt-3 grid grid-cols-3 gap-2">
 									<div
 										v-for="(p, i) in imagePreviews"
@@ -365,25 +385,23 @@
 									</div>
 
 									<div
-										v-for="(e, i) in existingImages"
+										v-for="(e, i) in filteredExistingImages"
 										:key="'ex-' + i"
-										v-if="e && !e.removed"
 										class="w-full h-20 rounded overflow-hidden border bg-white relative">
 										<img
 											:src="resolveImageUrl(e.url)"
 											class="w-full h-full object-cover" />
 										<button
 											type="button"
-											@click="markExistingRemoved(i)"
+											@click="markExistingRemoved(e._idx)"
 											class="absolute top-1 right-1 bg-white/70 rounded-full p-1 text-rose-600">
 											✕
 										</button>
 									</div>
 
 									<div
-										v-for="(e, i) in existingImages"
+										v-for="(e, i) in removedExistingImages"
 										:key="'ex-rem-' + i"
-										v-if="e && e.removed"
 										class="w-full h-20 rounded overflow-hidden border bg-rose-50 flex items-center justify-center text-rose-600 text-xs">
 										Removed
 										<button
@@ -569,19 +587,10 @@
 		if (typeof u !== "string") return PLACEHOLDER_IMAGE;
 		const s = u.trim();
 		if (!s) return PLACEHOLDER_IMAGE;
-		if (/^https?:\/\//i.test(s)) return s;
-
-		const base =
-			(axios.defaults && axios.defaults.baseURL) || window.location.origin;
-		const originCandidate = String(base)
-			.replace(/\/api\/?$/, "")
-			.replace(/\/$/, "");
-
-		if (s.startsWith("/")) return `${window.location.origin}${s}`;
-		if (/^(storage|uploads|public)\//i.test(s) || s.includes("storage/")) {
-			return `${originCandidate}/${s.replace(/^\/+/, "")}`;
-		}
-		return `${originCandidate}/storage/${s.replace(/^\/+/, "")}`;
+		const BASE_URL = "http://13.60.188.147";
+		if (s.startsWith("/")) return `${BASE_URL}${s}`;
+		if (s.startsWith("storage/")) return `${BASE_URL}/${s}`;
+		return `${BASE_URL}/storage/${s.replace(/^\/+/, "")}`;
 	}
 	function firstImage(prod) {
 		if (!prod) return PLACEHOLDER_IMAGE;
@@ -607,17 +616,39 @@
 		return PLACEHOLDER_IMAGE;
 	}
 
+	function uniqueImages(arr) {
+		const seen = new Set();
+		return arr.filter((img) => {
+			const path =
+				typeof img === "string" ? img : img?.image_path || img?.url || "";
+			if (!path || seen.has(path)) return false;
+			seen.add(path);
+			return true;
+		});
+	}
+
 	/* files preview handler */
 	function onFilesChange(e) {
 		const files = Array.from(e.target.files || []);
-		selectedFiles.value = files;
+		// Remove duplicate files by name and size
+		const uniqueFiles = [];
+		const fileMap = new Set();
+		for (const f of files) {
+			const key = f.name + f.size;
+			if (!fileMap.has(key)) {
+				fileMap.add(key);
+				uniqueFiles.push(f);
+			}
+		}
+		selectedFiles.value = uniqueFiles;
 		imagePreviews.value.forEach((u) => URL.revokeObjectURL(u));
-		imagePreviews.value = files.map((f) => URL.createObjectURL(f));
+		imagePreviews.value = uniqueFiles.map((f) => URL.createObjectURL(f));
 		e.target.value = "";
 		formErrors.images = "";
 		modalError.value = null;
 	}
 
+	/* existing images removal toggles */
 	/* existing images removal toggles */
 	function markExistingRemoved(idx) {
 		const item = existingImages.value[idx];
@@ -630,16 +661,29 @@
 		existingImages.value[idx].removed = true;
 	}
 	function unmarkExistingRemoved(idx) {
-		const item = existingImages.value[idx];
+		const item = removedExistingImages.value[idx];
 		if (!item) return;
-		if (typeof item !== "object") {
-			existingImages.value[idx] = { url: String(item || ""), removed: false };
-			return;
+		const originalIdx = existingImages.value.findIndex((img) => img === item);
+		if (originalIdx !== -1) {
+			if (typeof existingImages.value[originalIdx] !== "object") {
+				existingImages.value[originalIdx] = { url: String(item.url || ""), removed: false };
+			} else {
+				existingImages.value[originalIdx].removed = false;
+			}
 		}
-		existingImages.value[idx].removed = false;
 	}
 
-	/* fetch products */
+	const filteredExistingImages = computed(() =>
+		existingImages.value
+			.map((img, idx) => ({ ...img, _idx: idx }))
+			.filter((img) => img && !img.removed)
+	);
+
+	const removedExistingImages = computed(() =>
+		existingImages.value
+			.map((img, idx) => ({ ...img, _idx: idx }))
+			.filter((img) => img && img.removed)
+	);
 	async function fetchProducts() {
 		loading.value = true;
 		error.value = null;
@@ -666,21 +710,17 @@
 			// normalize images array
 			products.value.forEach((p) => {
 				try {
+					let imgs = [];
 					if (Array.isArray(p.images)) {
-						p.images = p.images
-							.map((it) => {
-								if (!it) return null;
-								if (typeof it === "string") return it;
-								if (typeof it === "object")
-									return it.url || it.path || it.file || null;
-								return null;
-							})
+						imgs = p.images
+							.map((it) =>
+								typeof it === "string" ? it : it?.url || it?.image_path || null
+							)
 							.filter(Boolean);
-					} else if (p.image && typeof p.image === "string")
-						p.images = [p.image];
+					} else if (p.image && typeof p.image === "string") imgs = [p.image];
 					else if (p.image_url && typeof p.image_url === "string")
-						p.images = [p.image_url];
-					else p.images = [];
+						imgs = [p.image_url];
+					p.images = uniqueImages(imgs);
 				} catch (e) {
 					p.images = [];
 				}
