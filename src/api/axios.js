@@ -1,7 +1,10 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.12.96:8000/api",
+  // baseURL: "http://192.168.12.215:8000/api",  
+  // Live
+  baseURL: "http://13.60.188.147/api",
+
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -30,7 +33,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("role");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }

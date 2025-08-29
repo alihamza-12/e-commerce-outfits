@@ -191,7 +191,7 @@ export const useCartStore = defineStore('cart', () => {
     const itemIndex = currentItems.findIndex(item => item.id === productId)
     
     if (itemIndex !== -1) {
-      if (quantity <= 0) {
+      if (quantity <= 0) {z
         removeFromCart(productId)
       } else {
         // Update the item with new quantity - create new object for reactivity
