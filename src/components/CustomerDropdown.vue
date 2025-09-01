@@ -228,6 +228,7 @@
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "@/api/axios";
+import { useAuthStore } from '@/stores/auth'
 
 const open = ref(false);
 const loading = ref(false);
@@ -236,26 +237,20 @@ const profile = ref(null);
 const root = ref(null);
 const router = useRouter();
 const profileSource = ref(null);
+const authStore = useAuthStore()
 
 // Mock notification state (you can replace with real data)
 const hasNotifications = ref(true);
 
-function getStoredUser() {
-	try {
-		return JSON.parse(localStorage.getItem("user") || "null");
-	} catch {
-		return null;
-	}
-}
 
 const localName = computed(() => {
-	const u = getStoredUser();
-	return u?.name || u?.full_name || u?.company_name || null;
+	const u = authStore.currentUser || authStore.user || null
+	return u?.name || u?.full_name || u?.company_name || null
 });
 
 const avatarUrl = computed(() => {
 	if (profile.value?.avatar) return profile.value.avatar;
-	const u = getStoredUser();
+	const u = authStore.currentUser || authStore.user || null
 	if (u?.avatar) return u.avatar;
 	return null;
 });
@@ -288,8 +283,8 @@ async function fetchProfile() {
 	profile.value = null;
 	profileSource.value = null;
 
-	const stored = getStoredUser();
-	const role = stored?.role?.toString()?.toLowerCase?.() || null;
+	const stored = authStore.currentUser || authStore.user || null
+	const role = stored?.role?.toString?.()?.toLowerCase?.() || null;
 
 	const customerEndpoints = ["/customer/profile", "/customer/me"];
 	const sellerEndpoints = ["/seller/profile", "/seller/me", "/seller"];
@@ -329,9 +324,10 @@ function onDocClick(e) {
 }
 
 function logout() {
-	localStorage.removeItem("token");
-	localStorage.removeItem("user");
-	localStorage.removeItem("role");
+	// Use the auth store logout which will clear in-memory auth and optionally
+	// clear persisted storage if enabled in the store.
+	authStore.logout()
+	// Notify other parts of the app and navigate home.
 	window.dispatchEvent(new Event("auth-changed"));
 	window.location.href = "/";
 }

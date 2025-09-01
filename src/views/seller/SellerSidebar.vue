@@ -105,32 +105,6 @@
 					<!-- Footer / user -->
 					<div class="mt-auto q-pa-sm footer" :style="{ zIndex: 2 }">
 						<q-separator spaced />
-
-						<div class="user-row row items-center q-mt-sm">
-							<q-avatar size="44" class="user-avatar" :style="avatarStyle">{{
-								initials
-							}}</q-avatar>
-
-							<div v-if="!collapsed" class="user-meta q-ml-sm">
-								<div class="user-name">{{ userName }}</div>
-								<div class="user-role text-caption">{{ userRole }}</div>
-							</div>
-
-							<!-- profile / settings action (compact) -->
-							<div class="ml-auto profile-wrap">
-								<q-btn
-									dense
-									flat
-									color="white"
-									icon="person"
-									@click="goToProfile"
-									:aria-label="'Profile'"
-									class="profile-btn">
-									<span v-if="!collapsed" class="q-ml-xs">Profile</span>
-								</q-btn>
-							</div>
-						</div>
-
 						<div v-if="!collapsed" class="q-mt-sm footer-actions">
 							<q-btn
 								unelevated
@@ -493,6 +467,27 @@
 	.menu-item:focus-within {
 		background: rgba(255, 255, 255, 0.02);
 	}
+
+	/* enhanced hover / active visuals */
+	.menu-item:hover,
+	.menu-item:focus-within {
+		background: linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.03),
+			rgba(255, 255, 255, 0.02)
+		);
+		transform: translateX(3px);
+		box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+	}
+
+	.menu-item.q-item--active {
+		background: linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.06),
+			rgba(255, 255, 255, 0.03)
+		);
+		box-shadow: 0 12px 30px rgba(2, 6, 23, 0.14);
+	}
 	.menu-item.q-item--active {
 		background: linear-gradient(
 			90deg,
@@ -520,14 +515,15 @@
 		position: absolute;
 		left: -12px;
 		width: 6px;
-		height: 22px;
-		border-radius: 6px;
+		height: 26px;
+		border-radius: 8px;
 		background: linear-gradient(
 			180deg,
-			rgba(255, 255, 255, 0.94),
-			rgba(255, 255, 255, 0.7)
+			rgba(255, 255, 255, 0.98),
+			rgba(255, 255, 255, 0.85)
 		);
-		box-shadow: 0 6px 16px rgba(2, 6, 23, 0.18);
+		box-shadow: 0 8px 20px rgba(2, 6, 23, 0.18);
+		transition: height 180ms ease, background 180ms ease, left 140ms ease;
 	}
 
 	/* text */
@@ -538,11 +534,13 @@
 	/* badge */
 	.menu-badge {
 		margin-left: 8px;
-		padding: 6px 8px;
+		padding: 6px 10px;
 		border-radius: 999px;
-		font-weight: 700;
+		font-weight: 800;
 		font-size: 12px;
-		box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
+		box-shadow: 0 8px 20px rgba(2, 6, 23, 0.12);
+		color: white !important;
+		background: rgba(255, 255, 255, 0.12) !important;
 	}
 
 	/* user footer */
@@ -619,6 +617,13 @@
 		color: var(--muted-white) !important;
 		fill: currentColor !important;
 		stroke: currentColor !important;
+		transition: transform 160ms ease, color 160ms ease;
+	}
+
+	.menu-item:hover .menu-icon,
+	.menu-item.q-item--active .menu-icon {
+		transform: translateX(2px) scale(1.03);
+		color: #fff !important;
 	}
 
 	/* responsive tweaks */

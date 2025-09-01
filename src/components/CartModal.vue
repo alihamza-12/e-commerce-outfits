@@ -103,11 +103,13 @@
 	import { ref, watch, onMounted, nextTick, computed } from "vue";
 	import { useCartStore } from "../stores/cart";
 	import { useQuasar } from "quasar";
+	import { useAuthStore } from '@/stores/auth'
 
 	const $q = useQuasar();
 	const cartStore = useCartStore();
 	const showCartModal = ref(false);
 	const forceRenderKey = ref(0);
+	const authStore = useAuthStore();
 
 	// derive items from store and also listen to changeTick to force updates
 	const itemsRef = computed(() => {
@@ -224,7 +226,7 @@
 			cartStore &&
 			cartStore.fetchRemoteCart &&
 			typeof cartStore.syncRemove === "function" &&
-			localStorage.getItem("token")
+			authStore?.token
 		) {
 			cartStore
 				.syncRemove(productId)

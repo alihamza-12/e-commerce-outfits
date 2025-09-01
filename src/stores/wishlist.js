@@ -9,19 +9,6 @@ export const useWishlistStore = defineStore('wishlist', () => {
     const isInitialized = ref(false)
     const auth = useAuthStore()
 
-    const loadFromLocal = () => {
-        try {
-            const raw = localStorage.getItem('wishlist-items')
-            if (raw) {
-                const parsed = JSON.parse(raw)
-                if (Array.isArray(parsed)) items.value = parsed
-            }
-        } catch (e) {
-            items.value = []
-        } finally {
-            isInitialized.value = true
-        }
-    }
 
     function resolveImageObject(img) {
         if (!img) return null
@@ -48,26 +35,19 @@ export const useWishlistStore = defineStore('wishlist', () => {
         return null
     }
 
-    const saveToLocal = () => {
-        try {
-            localStorage.setItem('wishlist-items', JSON.stringify(items.value))
-        } catch (e) {
-            // ignore
-        }
-    }
 
-    // initialize
+    // initialize: prefer server if authenticated, otherwise start empty in-memory
     try {
         if (auth.checkAuth && auth.checkAuth()) {
-            fetchRemote().catch(() => loadFromLocal())
+            fetchRemote().catch(() => { items.value = []; isInitialized.value = true })
         } else {
-            loadFromLocal()
+            items.value = []
+            isInitialized.value = true
         }
     } catch (e) {
-        loadFromLocal()
+        items.value = []
+        isInitialized.value = true
     }
-
-    watch(items, () => saveToLocal(), { deep: true })
 
     const wishlistItems = computed(() => items.value)
     const count = computed(() => items.value.length)
@@ -149,19 +129,30 @@ export const useWishlistStore = defineStore('wishlist', () => {
             const byPid = items.value.find((i) => Number(i.product_id) === Number(identifier))
             if (byPid) targetId = byPid.id
         }
+        // If we don't have a wishlist primary id yet, and user is authenticated,
+        // try to refresh remote list to obtain the server id (authoritative source).
+        if (!targetId && auth.checkAuth && auth.checkAuth()) {
+            try {
+                await fetchRemote()
+                const found = items.value.find((i) => Number(i.product_id) === Number(identifier))
+                if (found) targetId = found.id
+            } catch (err) {
+                // ignore
+            }
+        }
+
         if (!targetId) {
-            // nothing to remove locally
-            // maybe identifier was a product id and server stores wishlist items by id
-            // in that case, remove locally any entries matching the product id and return
+            // remove locally any entries matching the product id and persist
             const before = items.value.length
             items.value = items.value.filter((i) => Number(i.product_id) !== Number(identifier))
-            if (items.value.length < before) return { success: true }
-            return { success: false, message: 'not found' }
+            if (items.value.length < before) saveToLocal()
+            return { success: true }
         }
         try {
             const res = await wishlistService.removeItem(targetId)
             if (res && res.success) {
                 items.value = items.value.filter((i) => Number(i.id) !== Number(targetId))
+                saveToLocal()
             }
             return res
         } catch (e) {
@@ -171,6 +162,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
             if (status === 404 || /not found/i.test(String(msg))) {
                 console.warn('wishlist.remove: server item not found, removing locally', targetId, msg)
                 items.value = items.value.filter((i) => Number(i.id) !== Number(targetId))
+                saveToLocal()
                 return { success: true, message: 'removed locally' }
             }
             // fallback: remove locally and rethrow for other errors

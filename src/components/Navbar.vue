@@ -474,7 +474,7 @@
 								</div>
 								<div>
 									<div class="font-semibold text-gray-800">Email Support</div>
-									<div class="text-sm text-gray-600">support@stylehub.com</div>
+									<div class="text-sm text-gray-600">stylehub@gmail.com</div>
 								</div>
 							</div>
 
@@ -542,19 +542,12 @@
 							</button>
 						</form>
 
-						<div class="pt-4 border-t border-gray-200 space-y-3">
-							<router-link
-								to="/loginuser"
-								class="block w-full text-center px-4 py-3 text-gray-600 hover:text-gray-800 font-medium rounded-xl hover:bg-gray-100 transition-all duration-300"
-								@click="showMobileMenu = false">
-								Login
-							</router-link>
-							<router-link
-								to="/registeruser"
-								class="block w-full text-center px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-								@click="showMobileMenu = false">
-								Sign Up
-							</router-link>
+						<div class="pt-4 border-t border-gray-200 space-y-3 text-center">
+							<button
+								@click="showContactModal = false"
+								class="w-full px-4 py-3 bg-gray-200 rounded-xl hover:bg-gray-300 transition-colors">
+								Close
+							</button>
 						</div>
 					</div>
 				</div>
@@ -978,6 +971,14 @@
 	const router = useRouter();
 
 	function handleLogout() {
+		// clear wishlist locally so guest sees empty wishlist after logout
+		try {
+			if (wishlistStore && wishlistStore.items) {
+				wishlistStore.items = [];
+			}
+		} catch (e) {
+			// ignore
+		}
 		authStore.logout();
 		router.push("/");
 	}
