@@ -31,7 +31,8 @@ axiosInstance.interceptors.request.use(
       // If Pinia isn't available for some reason, fall back to localStorage.
     }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null
+    // Fallback: read from sessionStorage (token not persisted across tab close)
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem("token") : null
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
