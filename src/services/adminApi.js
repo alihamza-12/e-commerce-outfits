@@ -58,7 +58,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch users by status",
+        message:
+          error.response?.data?.message || "Failed to fetch users by status",
         error,
       };
     }
@@ -103,7 +104,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch seller details",
+        message:
+          error.response?.data?.message || "Failed to fetch seller details",
         error,
       };
     }
@@ -118,7 +120,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to update seller status",
+        message:
+          error.response?.data?.message || "Failed to update seller status",
         error,
       };
     }
@@ -149,7 +152,8 @@ class AdminService {
       return {
         success: false,
         message:
-          error.response?.data?.message || "Failed to update seller block status",
+          error.response?.data?.message ||
+          "Failed to update seller block status",
         error,
       };
     }
@@ -164,7 +168,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch sellers by status",
+        message:
+          error.response?.data?.message || "Failed to fetch sellers by status",
         error,
       };
     }
@@ -209,7 +214,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch order details",
+        message:
+          error.response?.data?.message || "Failed to fetch order details",
         error,
       };
     }
@@ -254,7 +260,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to bulk update orders",
+        message:
+          error.response?.data?.message || "Failed to bulk update orders",
         error,
       };
     }
@@ -279,7 +286,7 @@ class AdminService {
   async returnOrder(orderId, reason) {
     try {
       const response = await axios.patch(`/admin/orders/${orderId}/returned`, {
-        status: 'returned',
+        status: "returned",
         reason,
       });
       return { success: true, data: response.data };
@@ -302,7 +309,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to block/unblock order",
+        message:
+          error.response?.data?.message || "Failed to block/unblock order",
         error,
       };
     }
@@ -355,7 +363,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch seller products",
+        message:
+          error.response?.data?.message || "Failed to fetch seller products",
         error,
       };
     }
@@ -368,7 +377,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch all products",
+        message:
+          error.response?.data?.message || "Failed to fetch all products",
         error,
       };
     }
@@ -376,7 +386,9 @@ class AdminService {
 
   async approveProduct(productId) {
     try {
-      const response = await axios.patch(`/admin/products/${productId}/approve`);
+      const response = await axios.patch(
+        `/admin/products/${productId}/approve`
+      );
       return { success: true, data: response.data };
     } catch (error) {
       return {
@@ -567,7 +579,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch dashboard stats",
+        message:
+          error.response?.data?.message || "Failed to fetch dashboard stats",
         error,
       };
     }
@@ -584,7 +597,8 @@ class AdminService {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch seller categories",
+        message:
+          error.response?.data?.message || "Failed to fetch seller categories",
         error,
       };
     }
