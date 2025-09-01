@@ -129,14 +129,11 @@
 							:key="prod.id"
 							class="hover:bg-slate-50">
 							<td class="p-4 flex items-start gap-3">
+								<!-- show all images returned from backend -->
 								<img
-									v-for="imgObj in prod.images"
-									:key="imgObj.id || imgObj.image_path || imgObj"
-									:src="
-										resolveImageUrl(
-											typeof imgObj === 'string' ? imgObj : imgObj.image_path
-										)
-									"
+									v-for="(imgObj, idx) in prod.images"
+									:key="imgObj.id || imgObj.image_path || imgObj.url || idx"
+									:src="resolveImageUrl(imgObj)"
 									@error="(e) => (e.target.src = PLACEHOLDER_IMAGE)"
 									class="w-14 h-14 rounded-lg object-cover border"
 									alt="thumb" />
@@ -351,6 +348,7 @@
 									>Images</label
 								>
 
+								<!-- multiple attribute to allow selecting multiple images -->
 								<input
 									type="file"
 									accept="image/*"
@@ -362,10 +360,10 @@
 									shown below; click ✕ to remove them from the product.
 								</div>
 
-								<!-- Debug: Show selected image preview -->
+								<!-- selected previews -->
 								<div v-if="imagePreviews.length" class="mt-3">
 									<div class="text-xs text-slate-700 mb-1">
-										Selected image preview (for test):
+										Selected image preview:
 									</div>
 									<div class="flex gap-2">
 										<img
@@ -384,12 +382,13 @@
 										<img :src="p" class="w-full h-full object-cover" />
 									</div>
 
+									<!-- existing images returned from server -->
 									<div
 										v-for="(e, i) in filteredExistingImages"
 										:key="'ex-' + i"
 										class="w-full h-20 rounded overflow-hidden border bg-white relative">
 										<img
-											:src="resolveImageUrl(e.url)"
+											:src="resolveImageUrl(e)"
 											class="w-full h-full object-cover" />
 										<button
 											type="button"
@@ -399,6 +398,7 @@
 										</button>
 									</div>
 
+									<!-- removed existing images list -->
 									<div
 										v-for="(e, i) in removedExistingImages"
 										:key="'ex-rem-' + i"
@@ -406,7 +406,7 @@
 										Removed
 										<button
 											type="button"
-											@click="unmarkExistingRemoved(i)"
+											@click="unmarkExistingRemoved(e._idx)"
 											class="ml-2 text-slate-700">
 											(undo)
 										</button>
@@ -482,7 +482,10 @@
 
 <script setup>
 	import { ref, reactive, onMounted, watch, computed } from "vue";
-	import axios from "@/api/axios";
+	import axios from "@/api/axios"; // use shared instance
+
+	/* base url (backend) - used to build image URLs when server returns relative paths */
+	const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://13.60.188.147";
 
 	/* core state */
 	const products = ref([]);
@@ -525,14 +528,13 @@
 	const savingProduct = ref(false);
 
 	/* images + delete + toast */
-	/* selectedFiles are new files to upload (binary). */
 	const selectedFiles = ref([]); // File[]
 	const imagePreviews = ref([]); // object URLs
-	/* existingImages holds server-returned image path strings for display.
-   Each entry: { url: string, removed: boolean }
+
+	/* existingImages holds server-returned image objects:
+   Each entry: { id?, image_path?, url, removed: boolean }
 */
 	const existingImages = ref([]);
-	const deleteExistingList = ref([]); // list of original strings flagged for removal
 
 	const deleteConfirmId = ref(null);
 	const deleting = ref(false);
@@ -544,7 +546,6 @@
 		toast.type = type;
 		setTimeout(() => (toast.message = ""), ms);
 	}
-
 	const toastClass = computed(() => {
 		if (!toast.message) return "";
 		return toast.type === "success"
@@ -581,96 +582,108 @@
 			'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90" viewBox="0 0 120 90"><rect width="100%" height="100%" fill="#eef7f2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9aa9a0" font-size="12">No image</text></svg>'
 		);
 
-	/* image helpers (robust) */
+	/* resolveImageUrl: accepts object or string, prefer object.url if present */
 	function resolveImageUrl(u) {
 		if (!u) return PLACEHOLDER_IMAGE;
+
+		// if passed an object like { url, image_path }
+		if (typeof u === "object") {
+			const url = (
+				u.url ||
+				u.image_path ||
+				u.path ||
+				u.location ||
+				""
+			).toString();
+			if (!url) return PLACEHOLDER_IMAGE;
+			if (url.startsWith("http://") || url.startsWith("https://")) return url;
+			const clean = url.replace(/^\/+/, "");
+			return `${BASE_URL}/${clean}`;
+		}
+
+		// u is string
 		if (typeof u !== "string") return PLACEHOLDER_IMAGE;
 		const s = u.trim();
 		if (!s) return PLACEHOLDER_IMAGE;
-		const BASE_URL = "http://13.60.188.147";
-		if (s.startsWith("/")) return `${BASE_URL}${s}`;
-		if (s.startsWith("storage/")) return `${BASE_URL}/${s}`;
-		return `${BASE_URL}/storage/${s.replace(/^\/+/, "")}`;
-	}
-	function firstImage(prod) {
-		if (!prod) return PLACEHOLDER_IMAGE;
-		if (prod.image && typeof prod.image === "string")
-			return resolveImageUrl(prod.image);
-		if (prod.image_url && typeof prod.image_url === "string")
-			return resolveImageUrl(prod.image_url);
-		const imgs = prod.images;
-		if (Array.isArray(imgs) && imgs.length) {
-			for (const it of imgs) {
-				if (!it) continue;
-				if (typeof it === "string") return resolveImageUrl(it);
-				if (typeof it === "object") {
-					const candidate =
-						it.url || it.path || it.file || it.src || it.location;
-					if (candidate && typeof candidate === "string")
-						return resolveImageUrl(candidate);
-				}
-			}
-		}
-		const deep = prod?.image_path || prod?.photo || prod?.thumbnail;
-		if (deep && typeof deep === "string") return resolveImageUrl(deep);
-		return PLACEHOLDER_IMAGE;
+		if (s.startsWith("http://") || s.startsWith("https://")) return s;
+		const clean = s.replace(/^\/+/, "");
+		return `${BASE_URL}/${clean}`;
 	}
 
-	function uniqueImages(arr) {
+	/* unique helper for objects/strings by url or image_path */
+	function uniqueStrings(arr) {
 		const seen = new Set();
-		return arr.filter((img) => {
-			const path =
-				typeof img === "string" ? img : img?.image_path || img?.url || "";
-			if (!path || seen.has(path)) return false;
-			seen.add(path);
-			return true;
-		});
+		const out = [];
+		for (const it of arr) {
+			if (!it) continue;
+			const key =
+				typeof it === "string"
+					? it
+					: (it.url || it.image_path || "").toString();
+			const k = (key || "").trim();
+			if (!k) continue;
+			if (seen.has(k)) continue;
+			seen.add(k);
+			out.push(it);
+		}
+		return out;
 	}
 
-	/* files preview handler */
+	/* files preview handler - dedupe by name+size, append to selectedFiles but avoid duplicates */
 	function onFilesChange(e) {
 		const files = Array.from(e.target.files || []);
-		// Remove duplicate files by name and size
-		const uniqueFiles = [];
-		const fileMap = new Set();
+		if (!files.length) {
+			e.target.value = "";
+			return;
+		}
+
+		// avoid adding duplicates (by name+size)
+		const existingMap = new Set(
+			selectedFiles.value.map((f) => `${f.name}::${f.size}`)
+		);
+		const newFiles = [];
 		for (const f of files) {
-			const key = f.name + f.size;
-			if (!fileMap.has(key)) {
-				fileMap.add(key);
-				uniqueFiles.push(f);
+			const key = `${f.name}::${f.size}`;
+			if (!existingMap.has(key)) {
+				existingMap.add(key);
+				newFiles.push(f);
 			}
 		}
-		selectedFiles.value = uniqueFiles;
-		imagePreviews.value.forEach((u) => URL.revokeObjectURL(u));
-		imagePreviews.value = uniqueFiles.map((f) => URL.createObjectURL(f));
+
+		if (newFiles.length === 0) {
+			// nothing new to add
+			e.target.value = "";
+			return;
+		}
+
+		// append unique new files
+		selectedFiles.value = selectedFiles.value.concat(newFiles);
+
+		// rebuild previews (revoke old URLs first)
+		imagePreviews.value.forEach((u) => {
+			try {
+				URL.revokeObjectURL(u);
+			} catch {}
+		});
+		imagePreviews.value = selectedFiles.value.map((f) =>
+			URL.createObjectURL(f)
+		);
+
 		e.target.value = "";
 		formErrors.images = "";
 		modalError.value = null;
 	}
 
 	/* existing images removal toggles */
-	/* existing images removal toggles */
 	function markExistingRemoved(idx) {
 		const item = existingImages.value[idx];
 		if (!item) return;
-		// ensure item object shape
-		if (typeof item !== "object") {
-			existingImages.value[idx] = { url: String(item || ""), removed: true };
-			return;
-		}
-		existingImages.value[idx].removed = true;
+		existingImages.value[idx] = { ...(item || {}), removed: true };
 	}
 	function unmarkExistingRemoved(idx) {
-		const item = removedExistingImages.value[idx];
+		const item = existingImages.value[idx];
 		if (!item) return;
-		const originalIdx = existingImages.value.findIndex((img) => img === item);
-		if (originalIdx !== -1) {
-			if (typeof existingImages.value[originalIdx] !== "object") {
-				existingImages.value[originalIdx] = { url: String(item.url || ""), removed: false };
-			} else {
-				existingImages.value[originalIdx].removed = false;
-			}
-		}
+		existingImages.value[idx] = { ...(item || {}), removed: false };
 	}
 
 	const filteredExistingImages = computed(() =>
@@ -684,6 +697,8 @@
 			.map((img, idx) => ({ ...img, _idx: idx }))
 			.filter((img) => img && img.removed)
 	);
+
+	/* fetch products and normalize images to objects with url + image_path */
 	async function fetchProducts() {
 		loading.value = true;
 		error.value = null;
@@ -693,37 +708,44 @@
 			});
 			const payload = res?.data ?? null;
 
-			if (payload && payload.data && Array.isArray(payload.data))
-				products.value = payload.data;
-			else if (
-				payload &&
-				payload.data &&
-				payload.data.data &&
-				Array.isArray(payload.data.data)
-			)
-				products.value = payload.data.data;
-			else if (Array.isArray(payload)) products.value = payload;
-			else if (Array.isArray(res?.data?.products))
-				products.value = res.data.products;
-			else products.value = payload?.products ?? payload?.items ?? [];
+			let items = [];
+			if (payload && Array.isArray(payload.data)) items = payload.data;
+			else if (payload && payload.data && Array.isArray(payload.data.data))
+				items = payload.data.data;
+			else if (Array.isArray(payload)) items = payload;
+			else items = payload?.products ?? payload?.items ?? [];
 
-			// normalize images array
-			products.value.forEach((p) => {
+			products.value = items.map((p) => {
+				const copy = { ...p };
 				try {
 					let imgs = [];
 					if (Array.isArray(p.images)) {
 						imgs = p.images
-							.map((it) =>
-								typeof it === "string" ? it : it?.url || it?.image_path || null
-							)
+							.map((it) => {
+								if (!it) return null;
+								if (typeof it === "string") return { url: it, image_path: it };
+								if (typeof it === "object")
+									return {
+										id: it.id ?? null,
+										image_path: it.image_path ?? it.path ?? "",
+										url: it.url ?? it.image_path ?? it.path ?? "",
+									};
+								return null;
+							})
 							.filter(Boolean);
-					} else if (p.image && typeof p.image === "string") imgs = [p.image];
+					} else if (p.image && typeof p.image === "string")
+						imgs = [{ url: p.image, image_path: p.image }];
 					else if (p.image_url && typeof p.image_url === "string")
-						imgs = [p.image_url];
-					p.images = uniqueImages(imgs);
-				} catch (e) {
-					p.images = [];
+						imgs = [{ url: p.image_url, image_path: p.image_url }];
+					else imgs = [];
+					imgs = uniqueStrings(imgs).map((x) =>
+						typeof x === "string" ? { url: x, image_path: x } : { ...(x || {}) }
+					);
+					copy.images = imgs;
+				} catch {
+					copy.images = [];
 				}
+				return copy;
 			});
 
 			const metaTotal =
@@ -772,7 +794,7 @@
 		}
 	}
 
-	/* displayedProducts: search + sort (client-side) */
+	/* displayedProducts */
 	const displayedProducts = computed(() => {
 		const arr = Array.isArray(products.value) ? [...products.value] : [];
 		const q = (search.value || "").trim().toLowerCase();
@@ -815,11 +837,16 @@
 		productForm.category_id = null;
 		Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
 		modalError.value = null;
-		selectedFiles.value = [];
-		imagePreviews.value.forEach((url) => URL.revokeObjectURL(url));
+
+		// revoke previews
+		imagePreviews.value.forEach((u) => {
+			try {
+				URL.revokeObjectURL(u);
+			} catch {}
+		});
 		imagePreviews.value = [];
+		selectedFiles.value = [];
 		existingImages.value = [];
-		deleteExistingList.value = [];
 	}
 
 	function openCreateModal() {
@@ -842,23 +869,33 @@
 			productForm.is_approved = p.is_approved ?? prod.is_approved ?? false;
 			productForm.is_blocked = p.is_blocked ?? prod.is_blocked ?? false;
 			productForm.category_id = p.category_id ?? p.category?.id ?? null;
+
 			existingImages.value = [];
 			if (Array.isArray(p.images) && p.images.length) {
 				existingImages.value = p.images.map((i) => {
-					// defensive: handle string, object or falsy entries
-					if (!i) return { url: "", removed: false };
-					if (typeof i === "string") return { url: i, removed: false };
-					if (typeof i === "object") {
-						const url =
-							(i && (i.url || i.path || i.file || i.src || i.location)) || "";
-						return { url, removed: false };
-					}
-					return { url: String(i), removed: false };
+					if (!i) return { url: "", image_path: "", removed: false };
+					if (typeof i === "string")
+						return { url: i, image_path: i, removed: false };
+					return {
+						id: i.id ?? null,
+						image_path: i.image_path ?? i.path ?? "",
+						url: i.url ?? i.image_path ?? i.path ?? "",
+						removed: false,
+					};
 				});
+				existingImages.value = uniqueStrings(existingImages.value).map((x) =>
+					typeof x === "string"
+						? { url: x, image_path: x, removed: false }
+						: { ...(x || {}), removed: false }
+				);
 			} else if (p.image)
-				existingImages.value = [{ url: p.image, removed: false }];
+				existingImages.value = [
+					{ url: p.image, image_path: p.image, removed: false },
+				];
 			else if (p.image_url)
-				existingImages.value = [{ url: p.image_url, removed: false }];
+				existingImages.value = [
+					{ url: p.image_url, image_path: p.image_url, removed: false },
+				];
 		} catch (err) {
 			modalError.value = "Failed to load product for editing";
 		}
@@ -893,6 +930,7 @@
 			return;
 		}
 
+		if (savingProduct.value) return;
 		savingProduct.value = true;
 		modalError.value = null;
 		Object.keys(formErrors).forEach((k) => (formErrors[k] = ""));
@@ -904,20 +942,35 @@
 			formData.append("price", String(productForm.price));
 			formData.append("category_id", String(productForm.category_id ?? ""));
 
-			// append new files
+			// append selected new files
 			if (selectedFiles.value && selectedFiles.value.length) {
 				for (const f of selectedFiles.value) {
 					formData.append("images[]", f, f.name);
 				}
 			}
 
-			// collect removed existing image strings (if any)
-			const removed = existingImages.value
-				.filter((e) => e && e.removed)
-				.map((e) => e.url)
-				.filter(Boolean);
-			if (removed.length) {
-				formData.append("remove_images", JSON.stringify(removed));
+			// collect removed existing images
+			const removedItems = existingImages.value.filter((e) => e && e.removed);
+			if (removedItems.length) {
+				// prefer sending numeric IDs if backend supports it
+				for (const it of removedItems) {
+					if (it.id != null) {
+						formData.append("remove_image_ids[]", String(it.id));
+					} else if (it.image_path) {
+						formData.append("remove_images[]", it.image_path);
+					} else if (it.url) {
+						formData.append("remove_images[]", it.url);
+					}
+				}
+
+				// keep a JSON fallback
+				try {
+					const fallback = removedItems
+						.map((r) => r.id ?? r.image_path ?? r.url)
+						.filter(Boolean);
+					if (fallback.length)
+						formData.append("remove_images", JSON.stringify(fallback));
+				} catch {}
 			}
 
 			let res;
@@ -926,13 +979,12 @@
 				res = await axios.post(
 					`/seller/products/${editingProductId.value}`,
 					formData,
-					{
-						headers: { "Content-Type": "multipart/form-data" },
-					}
+					{ headers: { "Content-Type": "multipart/form-data" } }
 				);
 			} else {
 				res = await axios.post("/seller/products", formData, {
 					headers: { "Content-Type": "multipart/form-data" },
+					timeout: 60000, // 60 seconds
 				});
 			}
 
@@ -940,6 +992,8 @@
 				editingProductId.value ? "Product updated" : "Product created",
 				"success"
 			);
+
+			// refresh list
 			await fetchProducts();
 			closeModal();
 		} catch (err) {
@@ -979,9 +1033,14 @@
 	function closeModal() {
 		showModal.value = false;
 		editingProductId.value = null;
-		selectedFiles.value = [];
-		imagePreviews.value.forEach((url) => URL.revokeObjectURL(url));
+
+		imagePreviews.value.forEach((url) => {
+			try {
+				URL.revokeObjectURL(url);
+			} catch {}
+		});
 		imagePreviews.value = [];
+		selectedFiles.value = [];
 		existingImages.value = [];
 		resetForm();
 	}
@@ -1083,19 +1142,13 @@
 	.fade-leave-active {
 		transition: opacity 0.22s ease;
 	}
-
-	/* premium button shadows */
 	button {
 		transition: all 0.12s ease;
 	}
-
-	/* keep a gentle spacing from the sidebar when nested inside SellerLayout */
 	.content-with-sidebar {
 		width: 100%;
-		padding-left: 1rem; /* small interior padding */
+		padding-left: 1rem;
 	}
-
-	/* optional: add extra left gap on larger screens to visually separate from sidebar */
 	@media (min-width: 1024px) {
 		.content-with-sidebar {
 			padding-left: 1.5rem;

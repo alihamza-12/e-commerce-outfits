@@ -21,22 +21,22 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const response = await authApi.login(credentials)
-      
+
       if (response.success) {
         user.value = response.user
         token.value = response.token
         isAuthenticated.value = true
-        
+
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(response.user))
         localStorage.setItem('token', response.token)
         localStorage.setItem('role', response.user.role)
-        
+
         return { success: true, user: response.user }
       }
-      
+
       return { success: false, message: response.message }
-      
+
     } catch (error) {
       return { success: false, message: error.message || 'Login failed' }
     } finally {
@@ -48,23 +48,23 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const response = await authApi.register(userData)
-      
+
       if (response.success) {
         // Auto-login after registration
         user.value = response.user
         token.value = response.token
         isAuthenticated.value = true
-        
+
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(response.user))
         localStorage.setItem('token', response.token)
         localStorage.setItem('role', response.user.role)
-        
+
         return { success: true, user: response.user }
       }
-      
+
       return { success: false, message: response.message }
-      
+
     } catch (error) {
       return { success: false, message: error.message || 'Registration failed' }
     } finally {
@@ -81,10 +81,18 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       token.value = null
       isAuthenticated.value = false
-      
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      localStorage.removeItem('role')
+      // Clear all stored data in the browser to ensure no leftover user data remains
+      try {
+        localStorage.clear()
+      } catch (e) {
+        console.error('Failed to clear localStorage on logout', e)
+      }
+
+      try {
+        sessionStorage.clear()
+      } catch (e) {
+        console.error('Failed to clear sessionStorage on logout', e)
+      }
     }
   }
 
@@ -92,14 +100,14 @@ export const useAuthStore = defineStore('auth', () => {
     const storedUser = localStorage.getItem('user')
     const storedToken = localStorage.getItem('token')
     const storedRole = localStorage.getItem('role')
-    
+
     if (storedUser && storedToken && storedRole) {
       user.value = JSON.parse(storedUser)
       token.value = storedToken
       isAuthenticated.value = true
       return true
     }
-    
+
     return false
   }
 

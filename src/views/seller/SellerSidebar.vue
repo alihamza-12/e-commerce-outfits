@@ -1,5 +1,8 @@
 <template>
-	<div class="seller-sidebar-wrap">
+	<div
+		class="seller-sidebar-wrap"
+		role="navigation"
+		aria-label="Seller sidebar">
 		<!-- decorative background behind sidebar -->
 		<div
 			class="sidebar-bg"
@@ -21,112 +24,133 @@
 			side="left"
 			:width="drawerWidth"
 			bordered
-			class="seller-drawer"
+			:class="['seller-drawer', { 'mobile-light': isMobile }]"
 			:behavior="isMobile ? 'mobile' : 'desktop'"
 			:overlay="isMobile"
 			:swipe-close="false"
 			:swipe-to-open="false"
 			@update:model-value="onDrawerModelUpdate">
+			<!-- add a card container so edges are rounded and content sits in a card -->
 			<div class="inner q-pa-sm flex flex-col h-full" :style="{ zIndex: 2 }">
-				<!-- Brand -->
-				<div class="brand row items-center q-px-sm q-py-xs">
-					<div class="brand-left row items-center gap-3">
-						<q-avatar
-							:size="collapsed ? 44 : 48"
-							class="brand-avatar"
-							:style="avatarStyle">
-							<q-icon name="storefront" />
-						</q-avatar>
+				<div class="drawer-card">
+					<!-- Brand -->
+					<div class="brand row items-center q-px-sm q-py-xs">
+						<div class="brand-left row items-center gap-3">
+							<q-avatar
+								:size="collapsed ? 44 : 48"
+								class="brand-avatar"
+								:style="avatarStyle">
+								<q-icon name="storefront" />
+							</q-avatar>
 
-						<div v-if="!collapsed" class="brand-text">
-							<div class="brand-title">Seller Panel</div>
-							<div class="brand-sub">Manage your store</div>
-						</div>
-					</div>
-
-					<div class="ml-auto actions">
-						<q-btn
-							dense
-							flat
-							round
-							:icon="collapsed ? 'chevron_right' : 'chevron_left'"
-							class="toggle-btn"
-							@click="toggle"
-							:aria-label="collapsed ? 'Expand' : 'Collapse'" />
-					</div>
-				</div>
-
-				<q-separator spaced />
-
-				<!-- Menu -->
-				<q-list padding class="menu-list" :style="{ zIndex: 2 }">
-					<q-item
-						v-for="item in menu"
-						:key="item.to"
-						clickable
-						:active="isActive(item)"
-						@click="go(item)"
-						class="menu-item"
-						:dense="collapsed">
-						<q-item-section avatar>
-							<q-icon :name="item.icon" class="menu-icon" />
-						</q-item-section>
-
-						<q-item-section v-if="!collapsed">
-							<q-item-label class="menu-label">{{ item.label }}</q-item-label>
-							<q-item-label caption v-if="item.caption">{{
-								item.caption
-							}}</q-item-label>
-						</q-item-section>
-
-						<q-badge
-							v-if="item.badge && !collapsed"
-							:color="item.badgeColor || 'primary'"
-							class="menu-badge">
-							{{ item.badge }}
-						</q-badge>
-
-						<q-tooltip v-if="collapsed">{{ item.label }}</q-tooltip>
-					</q-item>
-				</q-list>
-
-				<!-- Footer / user -->
-				<div class="mt-auto q-pa-sm footer" :style="{ zIndex: 2 }">
-					<q-separator spaced />
-
-					<div class="user-row row items-center q-mt-sm">
-						<q-avatar size="44" class="user-avatar" :style="avatarStyle">{{
-							initials
-						}}</q-avatar>
-
-						<div v-if="!collapsed" class="user-meta q-ml-sm">
-							<div class="user-name">{{ userName }}</div>
-							<div class="user-role text-caption">{{ userRole }}</div>
+							<div v-if="!collapsed" class="brand-text">
+								<div class="brand-title">Seller Panel</div>
+								<div class="brand-sub">Manage your store</div>
+							</div>
 						</div>
 
-						<!-- Improved logout: visible in both collapsed and expanded -->
-						<div class="ml-auto logout-wrap">
+						<div class="ml-auto actions">
 							<q-btn
 								dense
-								:unelevated="!collapsed"
-								color="negative"
-								icon="logout"
-								@click="logout"
-								:label="!collapsed ? 'Logout' : ''"
-								class="logout-btn"
-								round />
-							<q-tooltip v-if="collapsed">Logout</q-tooltip>
+								flat
+								round
+								:icon="collapsed ? 'chevron_right' : 'chevron_left'"
+								class="toggle-btn"
+								@click="toggle"
+								:aria-label="collapsed ? 'Expand' : 'Collapse'" />
 						</div>
 					</div>
 
-					<div v-if="!collapsed" class="q-mt-sm">
-						<q-btn
-							unelevated
-							color="primary"
-							class="w-full"
-							icon="home"
-							label="Back to Home"
-							@click="toHome" />
+					<q-separator spaced />
+
+					<!-- Menu -->
+					<q-list padding class="menu-list" :style="{ zIndex: 2 }">
+						<q-item
+							v-for="item in menu"
+							:key="item.to"
+							clickable
+							:active="isActive(item)"
+							@click="go(item)"
+							class="menu-item"
+							:dense="collapsed"
+							tabindex="0">
+							<q-item-section avatar>
+								<div class="icon-wrap" :title="collapsed ? item.label : ''">
+									<q-icon :name="item.icon" class="menu-icon" />
+									<div
+										v-if="isActive(item)"
+										class="active-indicator"
+										aria-hidden="true"></div>
+								</div>
+							</q-item-section>
+
+							<q-item-section v-if="!collapsed" class="menu-text">
+								<q-item-label class="menu-label">{{ item.label }}</q-item-label>
+								<q-item-label caption v-if="item.caption">{{
+									item.caption
+								}}</q-item-label>
+							</q-item-section>
+
+							<q-badge
+								v-if="item.badge && !collapsed"
+								:color="item.badgeColor || 'primary'"
+								class="menu-badge">
+								{{ item.badge }}
+							</q-badge>
+
+							<q-tooltip v-if="collapsed">{{ item.label }}</q-tooltip>
+						</q-item>
+					</q-list>
+
+					<!-- Footer / user -->
+					<div class="mt-auto q-pa-sm footer" :style="{ zIndex: 2 }">
+						<q-separator spaced />
+
+						<div class="user-row row items-center q-mt-sm">
+							<q-avatar size="44" class="user-avatar" :style="avatarStyle">{{
+								initials
+							}}</q-avatar>
+
+							<div v-if="!collapsed" class="user-meta q-ml-sm">
+								<div class="user-name">{{ userName }}</div>
+								<div class="user-role text-caption">{{ userRole }}</div>
+							</div>
+
+							<!-- profile / settings action (compact) -->
+							<div class="ml-auto profile-wrap">
+								<q-btn
+									dense
+									flat
+									color="white"
+									icon="person"
+									@click="goToProfile"
+									:aria-label="'Profile'"
+									class="profile-btn">
+									<span v-if="!collapsed" class="q-ml-xs">Profile</span>
+								</q-btn>
+							</div>
+						</div>
+
+						<div v-if="!collapsed" class="q-mt-sm footer-actions">
+							<q-btn
+								unelevated
+								color="primary"
+								class="w-full back-btn"
+								icon="home"
+								label="Back to Home"
+								@click="toHome" />
+						</div>
+
+						<!-- collapsed footer: show compact Home icon when collapsed -->
+						<div v-else class="collapsed-footer-actions q-mt-sm">
+							<q-btn
+								dense
+								unelevated
+								color="primary"
+								icon="home"
+								@click="toHome"
+								round />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -135,7 +159,7 @@
 </template>
 
 <script setup>
-	import { ref, computed, watch, onMounted } from "vue";
+	import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 	import { useRouter, useRoute } from "vue-router";
 	import { useQuasar } from "quasar";
 	import { useUserStore } from "@/stores/user";
@@ -158,17 +182,16 @@
 			: window.innerWidth < compactBreakpoint;
 	});
 
-	// computed drawer width: full panel when mobile-open, compact icon width when closed
+	// computed drawer width
 	const drawerWidth = computed(() => {
 		if (isMobile.value) {
-			// when open on mobile, use ~86% or max 360px; when closed keep small icon width
 			const w = ($q && $q.screen && $q.screen.width) || window.innerWidth;
 			return drawer.value ? Math.min(Math.floor(w * 0.86), 360) : 84;
 		}
 		return collapsed.value ? 84 : width.value;
 	});
 
-	// persist collapse preference (optional)
+	// persist collapse preference
 	const COLLAPSE_KEY = "sellerSidebarCollapsed";
 	function saveCollapsed(v) {
 		try {
@@ -224,7 +247,7 @@
 		};
 	});
 
-	// menu (Settings removed)
+	// menu
 	const menu = [
 		{ to: "/seller/dashboard", icon: "dashboard", label: "Dashboard" },
 		{ to: "/seller/products", icon: "inventory_2", label: "Products" },
@@ -245,12 +268,10 @@
 	function go(item) {
 		if (item.to) {
 			router.push(item.to);
-			// auto-close on mobile for better UX
 			if (isMobile.value) drawer.value = false;
 		}
 	}
 	function toggle() {
-		// on desktop toggle collapse, on mobile open/close drawer
 		if (isMobile.value) {
 			drawer.value = !drawer.value;
 		} else {
@@ -261,82 +282,41 @@
 	function toHome() {
 		router.push("/");
 	}
-	async function logout() {
-		// Clear UI state first
-		try {
-			drawer.value = false;
-			collapsed.value = false;
-		} catch (e) {}
-
-		// Reset store if available
-		try {
-			if (typeof userStore.logout === "function") {
-				await userStore.logout();
-			} else if (typeof userStore.$reset === "function") {
-				userStore.$reset();
-			}
-		} catch (e) {
-			// ignore store errors
-			console.debug("userStore reset error", e);
-		}
-
-		// Clear persisted values
-		try {
-			localStorage.removeItem("userName");
-			localStorage.removeItem("userRole");
-			localStorage.removeItem(COLLAPSE_KEY);
-		} catch (e) {}
-
-		// Soft navigation (no full page reload)
-		try {
-			router.replace({ path: "/" });
-		} catch (e) {
-			// fallback to hard redirect only if router fails
-			window.location.href = "/";
-		}
-
-		// Notify user
-		$q.notify({ type: "positive", message: "Logged out" });
+	function goToProfile() {
+		router.push("/seller/profile");
 	}
 
 	// ensure drawer only toggles on explicit user action
 	function onDrawerModelUpdate(val) {
-		// ignore accidental programmatic opens when not intended
-		// only allow change when coming from explicit UI actions
 		drawer.value = Boolean(val);
-		// keep collapsed state consistent for mobile
 		if (isMobile.value) {
 			collapsed.value = !drawer.value;
 		}
 	}
 
-	// react to mobile/desktop changes: set sensible defaults
+	// keyboard: close drawer on Escape when mobile for accessibility
+	function handleKeydown(e) {
+		if (e.key === "Escape" && isMobile.value && drawer.value) {
+			drawer.value = false;
+		}
+	}
+
 	watch(
 		isMobile,
 		(mobile) => {
 			const persisted = loadCollapsed();
 			if (!mobile) {
-				// desktop: show drawer; use persisted collapse if present
 				drawer.value = true;
 				collapsed.value = persisted === null ? false : persisted;
 				width.value = collapsed.value ? 84 : 260;
 			} else {
-				// mobile: keep drawer closed by default (icons only)
 				drawer.value = false;
-				// but keep collapsed state true only when drawer is closed
 				collapsed.value = true;
 				width.value = 84;
 			}
 		},
 		{ immediate: true }
 	);
-
-	// when mobile drawer opens, show full labels; when closes, hide them again
-	watch(drawer, (open) => {
-		if (isMobile.value) {
-			collapsed.value = !open; // open -> collapsed=false (show labels)
-		}
-	});
 
 	// close drawer on navigation if mobile
 	watch(
@@ -347,16 +327,31 @@
 	);
 
 	onMounted(() => {
-		// ensure width matches collapsed state on mount
 		width.value = collapsed.value ? 84 : 260;
+		document.addEventListener("keydown", handleKeydown);
+	});
+
+	onUnmounted(() => {
+		document.removeEventListener("keydown", handleKeydown);
 	});
 </script>
 
 <style scoped>
+	:root {
+		/* local color variables for easier tweaking */
+		--sb-primary-1: 6 86% 40%;
+		--sb-primary-2: 205 95% 50%;
+		--glass-alpha: 0.06;
+		--muted-white: rgba(255, 255, 255, 0.92);
+		--muted-white-2: rgba(255, 255, 255, 0.82);
+	}
+
 	/* wrapper holds decorative background */
 	.seller-sidebar-wrap {
 		position: relative;
 		z-index: 30;
+		--shadow-strong: 0 18px 48px rgba(2, 6, 23, 0.22);
+		padding-left: 6px; /* small inset so card shadow is visible on left */
 	}
 
 	/* mobile open button */
@@ -368,6 +363,7 @@
 		box-shadow: 0 8px 22px rgba(2, 6, 23, 0.14);
 		background: #fff;
 		color: #0b63d6;
+		transition: none;
 	}
 	:deep(body.q-dark) .mobile-open-btn {
 		background: rgba(255, 255, 255, 0.06);
@@ -380,18 +376,23 @@
 		left: 0;
 		top: 0;
 		bottom: 0;
-		width: 320px; /* visible area behind drawer */
+		width: 340px;
 		background: radial-gradient(
-				circle at 20% 20%,
+				circle at 18% 20%,
 				rgba(255, 255, 255, 0.03),
-				transparent 20%
+				transparent 18%
 			),
-			linear-gradient(180deg, rgba(11, 99, 214, 0.9), rgba(43, 155, 255, 0.85));
-		filter: blur(28px);
-		transform: translateX(-40px);
+			linear-gradient(
+				180deg,
+				hsla(var(--sb-primary-1) / 0.95),
+				hsla(var(--sb-primary-2) / 0.93)
+			);
+		filter: blur(30px);
+		transform: translateX(-44px);
 		pointer-events: none;
 		z-index: 1;
-		border-right: 1px solid rgba(255, 255, 255, 0.02);
+		border-right: 1px solid rgba(255, 255, 255, 0.03);
+		opacity: 0.95;
 	}
 
 	/* drawer styling */
@@ -402,11 +403,14 @@
 			rgba(22, 116, 250, 0.96) 100%
 		);
 		color: #fff;
-		transition: width 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-		box-shadow: 0 12px 36px rgba(2, 6, 23, 0.16);
+		transition: width 180ms ease, box-shadow 180ms ease;
+		box-shadow: none;
 		border-right: 0;
-		overflow: hidden;
+		overflow: visible; /* allow outer shadow */
 		position: relative;
+		backdrop-filter: blur(6px);
+		will-change: width, transform;
+		padding: 8px 0; /* make space for card margin */
 	}
 
 	/* inner layout */
@@ -417,14 +421,34 @@
 		position: relative;
 	}
 
+	/* visual card which contains the sidebar content */
+	.drawer-card {
+		background: linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.02),
+			rgba(255, 255, 255, 0.01)
+		);
+		border-radius: 12px;
+		padding: 8px 8px;
+		margin: 6px 8px;
+		box-shadow: 0 14px 40px rgba(2, 6, 23, 0.18);
+		border: 1px solid rgba(255, 255, 255, 0.04);
+		display: flex;
+		flex-direction: column;
+		height: calc(100% - 12px);
+		overflow: hidden;
+	}
+
 	/* brand */
 	.brand {
 		align-items: center;
 		gap: 12px;
+		padding-top: 6px;
+		padding-bottom: 6px;
 	}
 	.brand-avatar {
 		border-radius: 12px;
-		box-shadow: 0 12px 40px rgba(2, 6, 23, 0.18);
+		box-shadow: 0 12px 28px rgba(2, 6, 23, 0.18);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -434,42 +458,91 @@
 		font-weight: 800;
 		font-size: 1rem;
 		letter-spacing: 0.2px;
+		color: var(--muted-white);
 	}
 	.brand-sub {
 		font-size: 0.75rem;
-		color: rgba(255, 255, 255, 0.9);
+		color: rgba(255, 255, 255, 0.82);
+		margin-top: -2px;
 	}
 
 	/* toggle */
 	.toggle-btn {
 		color: rgba(255, 255, 255, 0.96);
 	}
+	.toggle-btn .q-icon {
+		color: var(--muted-white) !important;
+	}
 
 	/* menu */
 	.menu-list {
 		margin-top: 10px;
 		padding: 4px;
+		overflow: auto;
 	}
 	.menu-item {
 		border-radius: 10px;
 		margin: 6px;
-		transition: background 160ms ease, box-shadow 160ms ease;
 		cursor: pointer;
+		padding: 8px 6px;
+		display: flex;
+		align-items: center;
+		gap: 10px;
 	}
-	.menu-item:hover {
-		background: rgba(255, 255, 255, 0.04);
+	.menu-item:hover,
+	.menu-item:focus-within {
+		background: rgba(255, 255, 255, 0.02);
 	}
 	.menu-item.q-item--active {
-		background: rgba(255, 255, 255, 0.08);
-		box-shadow: 0 8px 22px rgba(2, 6, 23, 0.14);
+		background: linear-gradient(
+			90deg,
+			rgba(255, 255, 255, 0.04),
+			rgba(255, 255, 255, 0.02)
+		);
+		box-shadow: 0 10px 22px rgba(2, 6, 23, 0.12);
 	}
 
+	/* icon wrapper to center inside collapsed mode and to show active indicator */
+	.icon-wrap {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 10px;
+	}
 	.menu-icon {
 		font-size: 20px;
 		color: rgba(255, 255, 255, 0.95);
 	}
+	.active-indicator {
+		position: absolute;
+		left: -12px;
+		width: 6px;
+		height: 22px;
+		border-radius: 6px;
+		background: linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.94),
+			rgba(255, 255, 255, 0.7)
+		);
+		box-shadow: 0 6px 16px rgba(2, 6, 23, 0.18);
+	}
+
+	/* text */
+	.menu-text {
+		padding-left: 6px;
+	}
+
+	/* badge */
 	.menu-badge {
 		margin-left: 8px;
+		padding: 6px 8px;
+		border-radius: 999px;
+		font-weight: 700;
+		font-size: 12px;
+		box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
 	}
 
 	/* user footer */
@@ -481,55 +554,154 @@
 		gap: 10px;
 	}
 	.user-avatar {
-		box-shadow: 0 8px 24px rgba(2, 6, 23, 0.14);
+		box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
 		font-weight: 700;
 	}
 	.user-name {
 		font-weight: 700;
+		color: var(--muted-white);
 	}
 	.user-role {
-		color: rgba(255, 255, 255, 0.9);
+		color: rgba(255, 255, 255, 0.82);
 		font-size: 12px;
 	}
 
-	/* logout styling */
-	.logout-wrap {
+	/* profile button */
+	.profile-wrap {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
-	.logout-btn {
-		transition: transform 140ms ease, box-shadow 140ms ease,
-			background-color 140ms ease;
-		border-radius: 10px;
-		min-width: 44px;
+	.profile-btn {
+		color: rgba(255, 255, 255, 0.95);
 	}
-	.logout-btn:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+	.footer-actions {
+		margin-top: 10px;
 	}
-	:deep(.q-btn--unelevated.logout-btn) {
-		background: rgba(255, 255, 255, 0.08);
-		color: #fff;
+	.collapsed-footer-actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 10px;
 	}
-	:deep(.q-btn--unelevated.logout-btn:hover) {
-		background: rgba(255, 255, 255, 0.12);
+
+	/* back button pill styling */
+	.back-btn {
+		border-radius: 999px;
+		height: 44px;
+		font-weight: 700;
+		box-shadow: 0 8px 18px rgba(2, 6, 23, 0.12);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+	}
+	.back-btn .q-icon {
+		margin-right: 6px;
+	}
+
+	/* collapsed adjustments */
+	.seller-drawer[style*="width: 84px"] .menu-item {
+		justify-content: center;
+		padding-left: 6px;
+		padding-right: 6px;
+	}
+	.seller-drawer[style*="width: 84px"] .brand-text,
+	.seller-drawer[style*="width: 84px"] .user-meta,
+	.seller-drawer[style*="width: 84px"] .footer-actions {
+		display: none;
+	}
+
+	/* ensure icons visible and crisp */
+	.menu-icon,
+	.q-btn .q-icon,
+	.brand-avatar .q-icon,
+	.user-avatar .q-icon {
+		color: var(--muted-white) !important;
+		fill: currentColor !important;
+		stroke: currentColor !important;
 	}
 
 	/* responsive tweaks */
 	@media (max-width: 900px) {
 		.seller-sidebar-wrap .sidebar-bg {
-			width: 160px;
+			width: 180px;
 			transform: translateX(-20px);
 			filter: blur(22px);
 		}
-		/* removed unconditional hiding of labels on small screens
-           labels are now controlled by `collapsed` in the template */
 		.menu-icon {
 			font-size: 22px;
 		}
 		.brand-sub {
 			display: none;
+		}
+	}
+
+	/* Mobile light mode so white text is not on white background */
+	@media (max-width: 900px) {
+		.seller-drawer.mobile-light {
+			/* light glass background */
+			background: rgba(255, 255, 255, 0.9) !important;
+			backdrop-filter: blur(8px);
+			color: #1e293b !important;
+		}
+
+		.seller-drawer.mobile-light .drawer-card {
+			background: linear-gradient(
+					180deg,
+					rgba(255, 255, 255, 0.95),
+					rgba(245, 247, 250, 0.92)
+				),
+				linear-gradient(
+					180deg,
+					rgba(255, 255, 255, 0.95),
+					rgba(245, 247, 250, 0.92)
+				);
+			border: 1px solid rgba(0, 0, 0, 0.06);
+			box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+		}
+
+		/* Text */
+		.seller-drawer.mobile-light .brand-title,
+		.seller-drawer.mobile-light .brand-sub,
+		.seller-drawer.mobile-light .menu-label,
+		.seller-drawer.mobile-light .menu-item .q-item__label,
+		.seller-drawer.mobile-light .user-name,
+		.seller-drawer.mobile-light .user-role,
+		.seller-drawer.mobile-light .menu-badge {
+			color: #1e293b !important;
+		}
+
+		/* Icons */
+		.seller-drawer.mobile-light .menu-icon,
+		.seller-drawer.mobile-light .q-icon,
+		.seller-drawer.mobile-light .brand-avatar .q-icon,
+		.seller-drawer.mobile-light .user-avatar .q-icon {
+			color: #0f5298 !important;
+			fill: currentColor !important;
+		}
+
+		/* Active menu item */
+		.seller-drawer.mobile-light .menu-item.q-item--active {
+			background: linear-gradient(90deg, #e2ecf9, #dde7f4);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		}
+		.seller-drawer.mobile-light .active-indicator {
+			background: #0f5298;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+		}
+
+		/* Toggle / buttons */
+		.seller-drawer.mobile-light .toggle-btn,
+		.seller-drawer.mobile-light .profile-btn,
+		.seller-drawer.mobile-light .back-btn,
+		.seller-drawer.mobile-light .collapsed-footer-actions .q-btn {
+			color: #0f5298 !important;
+		}
+
+		/* Avatar text stays white on gradient */
+		.seller-drawer.mobile-light .user-avatar,
+		.seller-drawer.mobile-light .brand-avatar {
+			color: #fff !important;
 		}
 	}
 </style>

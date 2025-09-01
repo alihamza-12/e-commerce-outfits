@@ -178,7 +178,9 @@
 										round
 										flat
 										icon="shopping_cart"
-										:color="cartStore.isInCart(product.id) ? 'primary' : 'grey-6'"
+										:color="
+											cartStore.isInCart(product.id) ? 'primary' : 'grey-6'
+										"
 										@click.stop="addToCart(product.id)" />
 								</div>
 							</div>
@@ -194,22 +196,22 @@
 				v-if="selectedProduct"
 				:product="selectedProduct"
 				@close="showDetail = false"
-@add-to-cart="addToCart"
-@toggle-wishlist="toggleWishlist"
-:in-cart="cartStore.isInCart(selectedProduct?.id)"
+				@add-to-cart="addToCart"
+				@toggle-wishlist="toggleWishlist"
+				:in-cart="cartStore.isInCart(selectedProduct?.id)"
 				:in-wishlist="wishlist.includes(selectedProduct?.id)" />
 		</q-dialog>
 	</q-page>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
-import { useCartStore } from "../../stores/cart";
-import ProductDetail from "./shopproduct/ProductDetail.vue";
+	import { ref } from "vue";
+	import { useQuasar } from "quasar";
+	import { useRouter } from "vue-router";
+	import { useCartStore } from "../../stores/cart";
+	import ProductDetail from "./shopproduct/ProductDetail.vue";
 
-const cartStore = useCartStore();
+	const cartStore = useCartStore();
 
 	// Premium Dummy Data
 	const heroCollections = [
@@ -372,26 +374,45 @@ const cartStore = useCartStore();
 		},
 	];
 
-const wishlist = ref([]);
+	const wishlist = ref([]);
 	const showDetail = ref(false);
 	const selectedProduct = ref(null);
 
 	const $q = useQuasar();
 	const router = useRouter();
 
-function addToCart(productId) {
-  const product = newArrivals.find((p) => p.id === productId);
-  if (product) {
-    cartStore.addToCart({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      image: product.image,
-      brand: product.brand,
-    });
-    $q.notify({ type: "positive", message: `${product.title} added to cart!` });
-  }
-}
+	function addToCart(productId) {
+		const product = newArrivals.find((p) => p.id === productId);
+		if (product) {
+			const payload = {
+				id: product.id,
+				title: product.title,
+				price: product.price,
+				image: product.image,
+				brand: product.brand,
+				quantity: 1,
+			};
+			if (authStore.checkAuth()) {
+				cartStore
+					.syncAdd(payload)
+					.then(() => {
+						$q.notify({
+							type: "positive",
+							message: `${product.title} added to cart!`,
+						});
+					})
+					.catch(() => {
+						$q.notify({ type: "negative", message: "Add to cart failed" });
+					});
+			} else {
+				cartStore.addToCart(payload);
+				$q.notify({
+					type: "positive",
+					message: `${product.title} added to cart!`,
+				});
+			}
+		}
+	}
 	function toggleWishlist(productId) {
 		const idx = wishlist.value.indexOf(productId);
 		if (idx === -1) {
