@@ -1,369 +1,956 @@
 <template>
-	<footer
-		class="w-full bg-gradient-to-br from-[#23272b] to-[#2d3136] text-white font-inter shadow-[0_-2px_24px_0_rgba(0,0,0,0.25)] animate-fadeInFooter">
-		<div class="max-w-7xl mx-auto px-4 py-10">
-			<div
-				class="flex flex-wrap gap-y-10 md:gap-y-0 md:flex-nowrap md:space-x-10">
-				<!-- Brand & Description -->
-				<div class="w-full md:w-1/4">
-					<div
-						class="text-3xl font-bold mb-2 tracking-tight animate-fadeInLeft">
-						StyleHub
+	<footer class="footer-container">
+		<!-- Animated accent bar -->
+		<div class="accent-bar">
+			<div class="flowing-gradient"></div>
+		</div>
+
+		<!-- Main footer content -->
+		<div class="footer-main">
+			<!-- Background effects -->
+			<div class="background-effects">
+				<div class="floating-orb orb-1"></div>
+				<div class="floating-orb orb-2"></div>
+				<div class="grid-pattern"></div>
+			</div>
+
+			<div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+				<!-- Top section - Brand and Newsletter -->
+				<div class="grid lg:grid-cols-2 gap-12 mb-16">
+					<!-- Brand section -->
+					<div class="brand-section">
+						<div class="brand-container">
+							<q-icon name="style" class="brand-icon" />
+							<div class="brand-content">
+								<h1 class="brand-title">
+									StyleHub
+									<q-badge label="Beta" class="beta-badge" />
+								</h1>
+								<p class="brand-tagline">Where Style Meets Innovation</p>
+							</div>
+						</div>
+
+						<p class="brand-description">
+							Discover curated fashion collections that blend contemporary
+							trends with timeless elegance. Premium quality, fast delivery, and
+							easy returns.
+						</p>
+
+						<!-- Social links -->
+						<div class="social-section">
+							<h4 class="section-title">Follow Us</h4>
+							<div class="social-grid">
+								<div
+									v-for="social in socialMedia"
+									:key="social.platform"
+									class="social-card">
+									<q-icon :name="social.icon" class="social-icon" />
+									<div class="social-info">
+										<span class="social-platform">{{ social.platform }}</span>
+										<span class="social-followers">{{ social.followers }}</span>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
-					<div
-						class="text-base text-gray-300 leading-relaxed animate-fadeInLeft delay-100">
-						Your destination for fashion. Discover the latest trends and styles
-						for everyone.
+
+					<!-- Newsletter section -->
+					<div class="newsletter-section">
+						<div class="newsletter-content">
+							<div class="newsletter-header">
+								<q-icon name="mail" class="newsletter-icon" />
+								<div>
+									<h3 class="newsletter-title">Stay Updated</h3>
+									<p class="newsletter-subtitle">
+										Get exclusive deals and style tips delivered to your inbox.
+									</p>
+								</div>
+							</div>
+
+							<div class="newsletter-form">
+								<div class="input-group">
+									<q-input
+										v-model="email"
+										type="email"
+										placeholder="Enter your email"
+										class="newsletter-input"
+										outlined
+										dense
+										:error="!!emailError"
+										:error-message="emailError">
+										<template v-slot:prepend>
+											<q-icon name="email" />
+										</template>
+									</q-input>
+									<q-btn
+										@click="handleSubscribe"
+										:loading="isSubmitting"
+										:disable="!isValidEmail"
+										class="subscribe-btn"
+										round
+										icon="send"
+										color="primary" />
+								</div>
+
+								<div v-if="successMessage" class="success-message">
+									<q-icon name="check_circle" />
+									{{ successMessage }}
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
-				<!-- Quick Links -->
-				<div class="w-full md:w-1/4">
-					<div
-						class="text-lg font-semibold mb-3 text-yellow-400 animate-fadeInUp">
-						Quick Links
+
+				<!-- Links section -->
+				<div class="links-section">
+					<div class="links-grid">
+						<!-- Shop Categories -->
+						<div class="link-column">
+							<h4 class="column-title">
+								<q-icon name="shopping_bag" />
+								Shop
+							</h4>
+							<ul class="links-list">
+								<li v-for="item in categories" :key="item.label">
+									<router-link :to="item.href" class="footer-link">
+										{{ item.label }}
+										<q-badge
+											v-if="item.badge"
+											:label="item.badge"
+											class="link-badge" />
+									</router-link>
+								</li>
+							</ul>
+						</div>
+
+						<!-- Support -->
+						<div class="link-column">
+							<h4 class="column-title">
+								<q-icon name="support_agent" />
+								Support
+							</h4>
+							<ul class="links-list">
+								<li v-for="item in support" :key="item.label">
+									<router-link :to="item.href" class="footer-link">
+										{{ item.label }}
+									</router-link>
+								</li>
+							</ul>
+						</div>
+
+						<!-- Quick Links -->
+						<div class="link-column">
+							<h4 class="column-title">
+								<q-icon name="link" />
+								Quick Links
+							</h4>
+							<ul class="links-list">
+								<li v-for="item in quickLinks" :key="item.label">
+									<router-link :to="item.href" class="footer-link">
+										{{ item.label }}
+									</router-link>
+								</li>
+							</ul>
+						</div>
+
+						<!-- Contact Info -->
+						<div class="link-column">
+							<h4 class="column-title">
+								<q-icon name="contact_phone" />
+								Contact
+							</h4>
+							<div class="contact-info">
+								<div class="contact-item">
+									<q-icon name="location_on" class="contact-icon" />
+									<span>Karachi, Pakistan</span>
+								</div>
+								<div class="contact-item">
+									<q-icon name="phone" class="contact-icon" />
+									<span>+92 (021) 555-STYLE</span>
+								</div>
+								<div class="contact-item">
+									<q-icon name="email" class="contact-icon" />
+									<span>hello@stylehub.com</span>
+								</div>
+							</div>
+						</div>
 					</div>
-					<ul class="space-y-2">
-						<li>
-							<router-link
-								to="/"
-								aria-label="About Us"
-								class="footer-link-tw group"
-								>About Us</router-link
-							>
-						</li>
-						<li>
-							<router-link
-								to="/contact"
-								aria-label="Contact"
-								class="footer-link-tw group"
-								>Contact</router-link
-							>
-						</li>
-						<li>
-							<router-link to="/contact" aria-label="FAQ" class="footer-link-tw group"
-								>FAQ</router-link
-							>
-						</li>
-						<li>
-							<router-link
-								to="/contact"
-								aria-label="Shipping and Returns"
-								class="footer-link-tw group"
-								>Shipping & Returns</router-link
-							>
-						</li>
-					</ul>
 				</div>
-				<!-- Categories -->
-				<div class="w-full md:w-1/4">
-					<div
-						class="text-lg font-semibold mb-3 text-yellow-400 animate-fadeInUp">
-						Categories
-					</div>
-					<ul class="space-y-2">
-						<li>
-							<router-link
-								to="/women"
-								aria-label="Women's Fashion"
-								class="footer-link-tw group"
-								>Women's Fashion</router-link
+
+				<!-- Bottom bar -->
+				<div class="divider"></div>
+
+				<div class="bottom-bar">
+					<div class="copyright">
+						<span>© {{ currentYear }} StyleHub. All rights reserved.</span>
+						<div class="legal-links">
+							<router-link to="" class="legal-link"
+								>Privacy</router-link
 							>
-						</li>
-						<li>
-							<router-link
-								to="/men"
-								aria-label="Men's Fashion"
-								class="footer-link-tw group"
-								>Men's Fashion</router-link
+							<router-link to="" class="legal-link">Terms</router-link>
+							<router-link to="" class="legal-link"
+								>Cookies</router-link
 							>
-						</li>
-						<li>
-							<router-link
-								to="/kids"
-								aria-label="Kids' Fashion"
-								class="footer-link-tw group"
-								>Kids' Fashion</router-link
-							>
-						</li>
-						<li>
-							<router-link
-								to="/shop"
-								aria-label="Accessories"
-								class="footer-link-tw group"
-								>Accessories</router-link
-							>
-						</li>
-					</ul>
-				</div>
-				<!-- Social & Newsletter -->
-				<div class="w-full md:w-1/4">
-					<div
-						class="text-lg font-semibold mb-3 text-yellow-400 animate-fadeInUp">
-						Follow Us
+						</div>
 					</div>
-					<div class="flex space-x-3 mb-4">
-						<a
-							href="https://facebook.com"
-							target="_blank"
-							aria-label="Facebook"
-							class="footer-social-tw bg-[#1877f2] hover:bg-[#145db2] group">
-							<i class="mdi mdi-facebook text-xl group-hover:scale-110 transition-transform"></i>
-						</a>
-						<a
-							href="https://instagram.com"
-							target="_blank"
-							aria-label="Instagram"
-							class="footer-social-tw bg-gradient-to-tr from-yellow-300 via-pink-500 to-indigo-600 hover:brightness-110 group">
-							<i class="mdi mdi-instagram text-xl group-hover:scale-110 transition-transform"></i>
-						</a>
-						<a
-							href="https://twitter.com"
-							target="_blank"
-							aria-label="Twitter"
-							class="footer-social-tw bg-[#1da1f2] hover:bg-[#0d8ddb] group">
-							<i class="mdi mdi-twitter text-xl group-hover:scale-110 transition-transform"></i>
-						</a>
-						<a
-							href="https://youtube.com"
-							target="_blank"
-							aria-label="YouTube"
-							class="footer-social-tw bg-[#ff0000] hover:bg-[#b80000] group">
-							<i class="mdi mdi-youtube text-xl group-hover:scale-110 transition-transform"></i>
-						</a>
+
+					<div class="status-info">
+						<div class="status-item">
+							<div class="status-dot"></div>
+							<span>All Systems Operational</span>
+						</div>
 					</div>
-					<div class="text-gray-400 text-sm mb-2">
-						Subscribe to our newsletter for updates
-					</div>
-					<form
-						@submit.prevent="subscribe"
-						class="flex items-center space-x-2 animate-fadeInUp delay-200">
-						<input
-							v-model="email"
-							type="email"
-							aria-label="Newsletter Email"
-							placeholder="Enter your email"
-							class="flex-1 px-3 py-2 rounded-l bg-[#292d32] text-white placeholder-gray-400 border border-gray-600 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-300 transition-all duration-300 outline-none hover:border-gray-500"
-							required />
-						<button
-							type="submit"
-							:disabled="!email || !/.+@.+\..+/.test(email)"
-							aria-label="Subscribe"
-							class="footer-newsletter-btn-tw group">
-							<i class="mdi mdi-send group-hover:translate-x-0.5 transition-transform"></i>
-						</button>
-					</form>
 				</div>
 			</div>
-			<div
-				class="border-t border-gray-700 my-8 opacity-30 animate-fadeIn"></div>
-			<div
-				class="text-center text-gray-400 text-sm tracking-wide animate-fadeInUp delay-300">
-				&copy; {{ new Date().getFullYear() }} StyleHub. All rights reserved.
-			</div>
+
+			<!-- Floating scroll to top button -->
+			<q-btn
+				v-if="showScrollTop"
+				@click="scrollToTop"
+				round
+				icon="keyboard_arrow_up"
+				color="primary"
+				class="scroll-top-btn"
+				size="md" />
 		</div>
 	</footer>
 </template>
 
-<script>
-	export default {
-		name: "Footer",
-		data() {
-			return {
-				email: "",
-			};
-		},
-		methods: {
-			subscribe() {
-				if (this.email && /.+@.+\..+/.test(this.email)) {
-					this.$q.notify({
-						message: "Thank you for subscribing!",
-						color: "positive",
-						icon: "check_circle",
-					});
-					this.email = "";
-				} else {
-					this.$q.notify({
-						message: "Please enter a valid email address.",
-						color: "negative",
-						icon: "error",
-					});
-				}
-			},
-		},
-	};
+<script setup>
+	import { ref, computed, onMounted, onUnmounted } from "vue";
+
+	// Reactive data
+	const email = ref("");
+	const isSubmitting = ref(false);
+	const emailError = ref("");
+	const successMessage = ref("");
+	const showScrollTop = ref(false);
+	const currentYear = new Date().getFullYear();
+
+	// Essential data - compact version
+	const quickLinks = [
+		{ label: "Shop", href: "" },
+		{ label: "About", href: "" },
+		{ label: "Contact", href: "" },
+		{ label: "Support", href: "" },
+	];
+
+	const categories = [
+		{ label: "Men's Fashion", href: "" },
+		{ label: "Women's Collection", href: "" },
+		{ label: "Kids & Teens", href: "" },
+		{ label: "Sale Items", href: "", badge: "" },
+	];
+
+	const support = [
+		{ label: "Help Center", href: "" },
+		{ label: "Shipping Info", href: "" },
+		{ label: "Returns", href: "" },
+		{ label: "Size Guide", href: "" },
+	];
+
+	const socialMedia = [
+		{ platform: "Instagram", icon: "camera_alt", followers: "2.5M" },
+		{ platform: "Twitter", icon: "alternate_email", followers: "950K" },
+		{ platform: "Facebook", icon: "facebook", followers: "1.2M" },
+	];
+
+	// Computed properties
+	const isValidEmail = computed(() => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(email.value);
+	});
+
+	// Methods
+	async function handleSubscribe() {
+		emailError.value = "";
+		successMessage.value = "";
+
+		if (!isValidEmail.value) {
+			emailError.value = "Please enter a valid email address";
+			return;
+		}
+
+		isSubmitting.value = true;
+
+		// Simulate API call
+		setTimeout(() => {
+			isSubmitting.value = false;
+			successMessage.value = "Welcome to StyleHub! Check your inbox.";
+			email.value = "";
+
+			setTimeout(() => {
+				successMessage.value = "";
+			}, 4000);
+		}, 1000);
+	}
+
+	function scrollToTop() {
+		window.scrollTo({
+			top: 0,
+			behavior: "smooth",
+		});
+	}
+
+	function handleScroll() {
+		showScrollTop.value = window.scrollY > 300;
+	}
+
+	// Lifecycle
+	onMounted(() => {
+		window.addEventListener("scroll", handleScroll);
+	});
+
+	onUnmounted(() => {
+		window.removeEventListener("scroll", handleScroll);
+	});
 </script>
 
-<!-- Tailwind + Animations + Custom Classes -->
 <style scoped>
-@import url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css");
+	/* Import fonts */
+	@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
-.font-inter {
-  font-family: "Inter", "Segoe UI", Arial, sans-serif;
-}
+	/* Root container */
+	.footer-container {
+		position: relative;
+		background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+		color: #e2e8f0;
+		font-family: "Inter", sans-serif;
+		overflow: hidden;
+	}
 
-/* Footer container animation */
-.animate-fadeInFooter {
-  animation: fadeInFooter 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes fadeInFooter {
-  from { opacity: 0; transform: translateY(40px);}
-  to { opacity: 1; transform: translateY(0);}
-}
+	/* Animated accent bar */
+	.accent-bar {
+		height: 4px;
+		position: relative;
+		overflow: hidden;
+	}
 
-/* Section titles */
-.text-lg, .text-3xl {
-  letter-spacing: -0.5px;
-}
-.text-yellow-400 {
-  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+	.flowing-gradient {
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 200%;
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			#3b82f6,
+			#8b5cf6,
+			#ec4899,
+			transparent
+		);
+		animation: flow 3s linear infinite;
+	}
 
-/* Footer links */
-.footer-link-tw {
-  @apply text-gray-200 transition-all duration-300 rounded px-2 py-1 relative;
-  font-size: 1rem;
-  font-weight: 500;
-  display: inline-block;
-  animation: fadeInUp 1.2s;
-}
-.footer-link-tw::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #ffd600, transparent);
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
-}
-.footer-link-tw:hover, .footer-link-tw:focus {
-  @apply text-yellow-300;
-  transform: translateY(-2px);
-}
-.footer-link-tw:hover::before, .footer-link-tw:focus::before {
-  width: 100%;
-}
+	@keyframes flow {
+		0% {
+			transform: translateX(-50%);
+		}
+		100% {
+			transform: translateX(50%);
+		}
+	}
 
-/* Social icons */
-.footer-social-tw {
-  @apply flex items-center justify-center w-10 h-10 rounded-full text-white shadow-lg transition-all duration-300;
-  font-size: 1.5rem;
-  animation: popIn 1.2s;
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
-}
-.footer-social-tw::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: all 0.6s ease;
-}
-.footer-social-tw:hover {
-  @apply scale-110 shadow-xl;
-  border-color: #ffd600;
-  box-shadow: 0 4px 16px rgba(255, 214, 0, 0.3);
-}
-.footer-social-tw:hover::before {
-  left: 100%;
-}
-/* Instagram gradient fix */
-.footer-social-tw.bg-gradient-to-tr {
-  background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
-}
+	/* Main footer */
+	.footer-main {
+		position: relative;
+	}
 
-/* Newsletter input and button */
-.footer-newsletter-btn-tw {
-  @apply bg-yellow-400 text-[#23272b] px-4 py-2 rounded-r font-bold transition-all duration-300;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  outline: none;
-  position: relative;
-  overflow: hidden;
-}
-.footer-newsletter-btn-tw::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transition: all 0.6s ease;
-}
-.footer-newsletter-btn-tw:hover:not(:disabled) {
-  @apply bg-yellow-300;
-  box-shadow: 0 4px 16px rgba(255, 214, 0, 0.4);
-  transform: translateY(-2px);
-}
-.footer-newsletter-btn-tw:hover:not(:disabled)::before {
-  left: 100%;
-}
-.footer-newsletter-btn-tw:disabled {
-  @apply opacity-50 cursor-not-allowed;
-}
+	.background-effects {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
 
-/* Newsletter input focus */
-input[type="email"].flex-1:focus {
-  border-color: #ffd600 !important;
-  box-shadow: 0 0 0 2px rgba(255, 214, 0, 0.3);
-  background: #23272b;
-  color: #fff;
-}
+	.floating-orb {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		opacity: 0.2;
+		animation: float 20s ease-in-out infinite;
+	}
 
-/* Animations */
-@keyframes fadeInLeft {
-  from { opacity: 0; transform: translateX(-30px);}
-  to { opacity: 1; transform: translateX(0);}
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px);}
-  to { opacity: 1; transform: translateY(0);}
-}
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.7);}
-  to { opacity: 1; transform: scale(1);}
-}
-.animate-fadeInLeft { animation: fadeInLeft 1s;}
-.animate-fadeInUp { animation: fadeInUp 1.2s;}
-.animate-popIn { animation: popIn 1.2s;}
+	.orb-1 {
+		width: 300px;
+		height: 300px;
+		background: radial-gradient(circle, #3b82f6, transparent);
+		top: -150px;
+		left: -150px;
+	}
 
-/* Divider animation */
-.border-t.animate-fadeIn {
-  animation: fadeIn 1.5s;
-}
-@keyframes fadeIn {
-  from { opacity: 0;}
-  to { opacity: 0.3;}
-}
+	.orb-2 {
+		width: 250px;
+		height: 250px;
+		background: radial-gradient(circle, #ec4899, transparent);
+		bottom: -125px;
+		right: -125px;
+		animation-delay: -10s;
+	}
 
-/* Copyright text */
-.text-center.text-gray-400 {
-  color: #bdbdbd;
-  letter-spacing: 0.5px;
-  font-size: 0.97rem;
-  animation: fadeInUp 1.6s;
-}
+	@keyframes float {
+		0%,
+		100% {
+			transform: translate(0, 0);
+		}
+		50% {
+			transform: translate(20px, -20px);
+		}
+	}
 
-/* Responsive improvements */
-@media (max-width: 1023px) {
-  .flex-nowrap { flex-wrap: wrap !important; }
-  .md\:space-x-10 > :not([hidden]) ~ :not([hidden]) { margin-left: 0 !important; }
-  .footer-newsletter-btn-tw { border-radius: 0 0.5rem 0.5rem 0; }
-}
-@media (max-width: 599px) {
-  .text-3xl { font-size: 1.4rem; }
-  .text-lg { font-size: 1rem; }
-  .text-base { font-size: 0.95rem; }
-  .footer-link-tw { font-size: 0.95rem; }
-  .footer-social-tw { width: 2.25rem; height: 2.25rem; font-size: 1.1rem; }
-}
+	.grid-pattern {
+		position: absolute;
+		inset: 0;
+		background-image: linear-gradient(
+				rgba(255, 255, 255, 0.02) 1px,
+				transparent 1px
+			),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+		background-size: 40px 40px;
+		animation: gridMove 30s linear infinite;
+	}
+
+	@keyframes gridMove {
+		0% {
+			transform: translate(0, 0);
+		}
+		100% {
+			transform: translate(40px, 40px);
+		}
+	}
+
+	/* Brand Section */
+	.brand-section {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+	}
+
+	.brand-container {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.brand-icon {
+		font-size: 42px;
+		background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+	}
+
+	.brand-content {
+		flex: 1;
+	}
+
+	.brand-title {
+		font-size: 2rem;
+		font-weight: 800;
+		background: linear-gradient(135deg, #ffffff, #60a5fa, #ec4899);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		line-height: 1.2;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.beta-badge {
+		background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+		color: white !important;
+		font-size: 10px !important;
+		font-weight: 700 !important;
+		text-transform: uppercase !important;
+		letter-spacing: 1px !important;
+	}
+
+	.brand-tagline {
+		font-size: 14px;
+		color: #94a3b8;
+		font-weight: 500;
+		margin-top: 4px;
+	}
+
+	.brand-description {
+		font-size: 15px;
+		line-height: 1.6;
+		color: #64748b;
+		max-width: 400px;
+	}
+
+	/* Social Section */
+	.social-section {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.section-title {
+		font-size: 16px;
+		font-weight: 600;
+		color: #f1f5f9;
+	}
+
+	.social-grid {
+		display: flex;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+
+	.social-card {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 12px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		transition: all 0.3s ease;
+		cursor: pointer;
+	}
+
+	.social-card:hover {
+		background: rgba(255, 255, 255, 0.1);
+		transform: translateY(-2px);
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.social-icon {
+		font-size: 18px;
+		color: #60a5fa;
+	}
+
+	.social-info {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.social-platform {
+		font-size: 12px;
+		font-weight: 600;
+		color: #e2e8f0;
+	}
+
+	.social-followers {
+		font-size: 10px;
+		color: #94a3b8;
+	}
+
+	/* Newsletter Section */
+	.newsletter-section {
+		position: relative;
+	}
+
+	.newsletter-content {
+		background: linear-gradient(
+			145deg,
+			rgba(255, 255, 255, 0.08),
+			rgba(255, 255, 255, 0.02)
+		);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 24px;
+		padding: 32px;
+		backdrop-filter: blur(10px);
+	}
+
+	.newsletter-header {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		margin-bottom: 24px;
+	}
+
+	.newsletter-icon {
+		font-size: 48px;
+		color: #60a5fa;
+		padding: 16px;
+		background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+		border-radius: 16px;
+		box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+	}
+
+	.newsletter-title {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #f1f5f9;
+		margin-bottom: 4px;
+	}
+
+	.newsletter-subtitle {
+		font-size: 14px;
+		color: #94a3b8;
+		line-height: 1.5;
+	}
+
+	.newsletter-form {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.input-group {
+		display: flex;
+		gap: 8px;
+		align-items: flex-start;
+	}
+
+	.newsletter-input {
+		flex: 1;
+	}
+
+	.newsletter-input :deep(.q-field__control) {
+		background: rgba(15, 23, 42, 0.8) !important;
+		border-color: rgba(255, 255, 255, 0.1) !important;
+		border-radius: 12px !important;
+		color: #f1f5f9 !important;
+	}
+
+	.newsletter-input :deep(.q-field__control):hover {
+		border-color: rgba(255, 255, 255, 0.2) !important;
+	}
+
+	.newsletter-input :deep(.q-field__control):focus-within {
+		border-color: #3b82f6 !important;
+		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+	}
+
+	.newsletter-input :deep(input) {
+		color: #f1f5f9 !important;
+	}
+
+	.newsletter-input :deep(input::placeholder) {
+		color: #64748b !important;
+	}
+
+	.newsletter-input :deep(.q-icon) {
+		color: #64748b !important;
+	}
+
+	.subscribe-btn {
+		width: 48px !important;
+		height: 48px !important;
+		background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+		box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3) !important;
+	}
+
+	.subscribe-btn:hover {
+		transform: translateY(-2px) !important;
+		box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4) !important;
+	}
+
+	.success-message {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		color: #6ee7b7;
+		font-size: 13px;
+		font-weight: 500;
+		padding: 8px 12px;
+		background: rgba(16, 185, 129, 0.1);
+		border-radius: 8px;
+		border: 1px solid rgba(16, 185, 129, 0.2);
+	}
+
+	/* Links Section */
+	.links-section {
+		margin-bottom: 32px;
+	}
+
+	.links-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 32px;
+	}
+
+	.link-column {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.column-title {
+		font-size: 16px;
+		font-weight: 700;
+		color: #f1f5f9;
+		margin-bottom: 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.column-title .q-icon {
+		font-size: 18px;
+		color: #60a5fa;
+	}
+
+	.links-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.footer-link {
+		color: #cbd5e1;
+		text-decoration: none;
+		font-size: 14px;
+		font-weight: 500;
+		padding: 6px 0;
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		position: relative;
+	}
+
+	.footer-link::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 50%;
+		width: 0;
+		height: 2px;
+		background: linear-gradient(90deg, #3b82f6, #ec4899);
+		transition: width 0.3s ease;
+		transform: translateY(-50%);
+	}
+
+	.footer-link:hover {
+		color: #ffffff;
+		padding-left: 12px;
+	}
+
+	.footer-link:hover::before {
+		width: 6px;
+	}
+
+	.link-badge {
+		background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+		color: white !important;
+		font-size: 9px !important;
+		font-weight: 700 !important;
+		text-transform: uppercase !important;
+	}
+
+	.contact-info {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.contact-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 14px;
+		color: #cbd5e1;
+	}
+
+	.contact-icon {
+		font-size: 16px;
+		color: #60a5fa;
+	}
+
+	/* Bottom Bar */
+	.divider {
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgba(255, 255, 255, 0.2),
+			transparent
+		);
+		margin: 32px 0 24px;
+	}
+
+	.bottom-bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 16px;
+		font-size: 13px;
+	}
+
+	.copyright {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
+		color: #94a3b8;
+	}
+
+	.legal-links {
+		display: flex;
+		gap: 12px;
+	}
+
+	.legal-link {
+		color: #cbd5e1;
+		text-decoration: none;
+		padding: 4px 8px;
+		border-radius: 6px;
+		transition: all 0.3s ease;
+	}
+
+	.legal-link:hover {
+		color: #ffffff;
+		background: rgba(255, 255, 255, 0.05);
+	}
+
+	.status-info {
+		display: flex;
+		gap: 12px;
+	}
+
+	.status-item {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 12px;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 16px;
+		font-size: 11px;
+		font-weight: 600;
+		color: #cbd5e1;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.status-dot {
+		width: 8px;
+		height: 8px;
+		background: #10b981;
+		border-radius: 50%;
+		animation: pulse-dot 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-dot {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	/* Scroll to top button */
+	.scroll-top-btn {
+		position: fixed !important;
+		bottom: 30px !important;
+		right: 30px !important;
+		z-index: 1000 !important;
+		box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4) !important;
+		transition: all 0.3s ease !important;
+	}
+
+	.scroll-top-btn:hover {
+		transform: translateY(-3px) !important;
+		box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5) !important;
+	}
+
+	/* Mobile Responsive */
+	@media (max-width: 768px) {
+		.footer-main .max-w-6xl {
+			padding: 24px 16px;
+		}
+
+		.grid.lg\\:grid-cols-2 {
+			grid-template-columns: 1fr;
+			gap: 24px;
+		}
+
+		.links-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 24px;
+		}
+
+		.newsletter-content {
+			padding: 24px 20px;
+		}
+
+		.newsletter-header {
+			flex-direction: column;
+			text-align: center;
+			gap: 12px;
+		}
+
+		.input-group {
+			flex-direction: column;
+		}
+
+		.brand-container {
+			flex-direction: column;
+			text-align: center;
+			gap: 12px;
+		}
+
+		.brand-title {
+			font-size: 1.5rem;
+		}
+
+		.social-grid {
+			justify-content: center;
+		}
+
+		.bottom-bar {
+			flex-direction: column;
+			text-align: center;
+			gap: 12px;
+		}
+
+		.scroll-top-btn {
+			bottom: 20px !important;
+			right: 20px !important;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.links-grid {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+
+		.newsletter-icon {
+			font-size: 36px;
+			padding: 12px;
+		}
+
+		.newsletter-title {
+			font-size: 1.25rem;
+		}
+
+		.legal-links {
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+	}
+
+	/* Smooth animations */
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+
+	/* Enhanced focus states */
+	.footer-link:focus,
+	.legal-link:focus,
+	.subscribe-btn:focus {
+		outline: 2px solid #3b82f6;
+		outline-offset: 2px;
+		border-radius: 4px;
+	}
 </style>

@@ -1,12 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import HomePage from '../views/home/HomePage.vue'
-import Shop from '../views/home/Shop.vue'
 import Contact from '../views/home/Contact.vue'
-import Men from '../views/home/Men.vue'
-import Women from '../views/home/Women.vue'
-import KidsFashion from '../views/home/KidsFashion.vue'
-import UpdateStock from '@/views/seller/UpdateStock.vue'
+
 
 const routes = [
   // Home routes
@@ -15,26 +11,12 @@ const routes = [
     name: 'HomePage',
     component: HomePage,
   },
-  {
-    path: '/men',
-    component: Men,
-  },
-  {
-    path: '/women',
-    component: Women,
-  },
-  {
-    path: '/shop',
-    component: Shop,
-  },
+ 
   {
     path: '/contact',
     component: Contact,
   },
-  {
-    path: '/kids',
-    component: KidsFashion,
-  },
+ 
 
   // Unified admin routes - accessible through main login
   {
