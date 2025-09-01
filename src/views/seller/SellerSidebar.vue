@@ -84,7 +84,7 @@
 								</div>
 							</q-item-section>
 
-							<q-item-section v-if="!collapsed" class="menu-text">
+							<q-item-section v-if="!collapsed || isMobile" class="menu-text">
 								<q-item-label class="menu-label">{{ item.label }}</q-item-label>
 								<q-item-label caption v-if="item.caption">{{
 									item.caption
