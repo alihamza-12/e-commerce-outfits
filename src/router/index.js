@@ -11,12 +11,12 @@ const routes = [
     name: 'HomePage',
     component: HomePage,
   },
- 
+
   {
     path: '/contact',
     component: Contact,
   },
- 
+
 
   // Unified admin routes - accessible through main login
   {
@@ -142,7 +142,7 @@ const routes = [
         meta: { requiresAuth: true, requiresRole: 'seller' }
       },
       {
-       path: 'stock', name: 'SellerStock', component: () => import('@/views/seller/UpdateStock.vue')
+        path: 'stock', name: 'SellerStock', component: () => import('@/views/seller/UpdateStock.vue')
       },
       {
         path: 'settings',
@@ -172,11 +172,22 @@ const routes = [
 
   //Coustomer Routes
   {
-  path: '/customer/profile',
-  name: 'CustomerProfile',
-  component: () => import('@/views/customer/CustomerProfile.vue'),
-  meta: { requiresAuth: true } // optional
-},
+    path: '/customer/profile',
+    name: 'CustomerProfile',
+    component: () => import('@/views/customer/CustomerProfile.vue'),
+    meta: { requiresAuth: true } // optional
+  },
+  {
+    path: '/customer/orders',
+    name: 'CustomerOrders',
+    component: () => import('@/views/customer/CustomerOrders.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('@/views/customer/Checkout.vue')
+  },
 
   // User authentication routes
   {

@@ -8,6 +8,11 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(null)
   const isAuthenticated = ref(false)
   const loading = ref(false)
+  // Control persistence behavior.
+  // The app will persist ONLY the JWT token to localStorage when `persistTokenOnly` is true.
+  // This avoids storing user profile or role in browser storage while allowing the
+  // token to survive page refreshes so the session remains active.
+  const persistTokenOnly = true
 
   // Getters
   const currentUser = computed(() => user.value)
@@ -27,10 +32,14 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = response.token
         isAuthenticated.value = true
 
-        // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(response.user))
-        localStorage.setItem('token', response.token)
-        localStorage.setItem('role', response.user.role)
+        // Optionally persist ONLY the token to localStorage so refresh doesn't log out.
+        if (persistTokenOnly) {
+          try {
+            localStorage.setItem('token', response.token)
+          } catch (e) {
+            console.warn('Failed to persist token to localStorage', e)
+          }
+        }
 
         return { success: true, user: response.user }
       }
@@ -55,10 +64,14 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = response.token
         isAuthenticated.value = true
 
-        // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(response.user))
-        localStorage.setItem('token', response.token)
-        localStorage.setItem('role', response.user.role)
+        // Optionally persist ONLY the token to localStorage so refresh doesn't log out.
+        if (persistTokenOnly) {
+          try {
+            localStorage.setItem('token', response.token)
+          } catch (e) {
+            console.warn('Failed to persist token to localStorage', e)
+          }
+        }
 
         return { success: true, user: response.user }
       }
@@ -81,31 +94,30 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       token.value = null
       isAuthenticated.value = false
-      // Clear all stored data in the browser to ensure no leftover user data remains
+      // Remove only the token (and role/user if present) on logout per requirement.
       try {
-        localStorage.clear()
+        try { localStorage.removeItem('token') } catch (e) {}
+        try { localStorage.removeItem('role') } catch (e) {}
+        try { localStorage.removeItem('user') } catch (e) {}
       } catch (e) {
-        console.error('Failed to clear localStorage on logout', e)
-      }
-
-      try {
-        sessionStorage.clear()
-      } catch (e) {
-        console.error('Failed to clear sessionStorage on logout', e)
+        console.error('Failed to remove auth keys from localStorage on logout', e)
       }
     }
   }
 
   const checkAuth = () => {
-    const storedUser = localStorage.getItem('user')
-    const storedToken = localStorage.getItem('token')
-    const storedRole = localStorage.getItem('role')
-
-    if (storedUser && storedToken && storedRole) {
-      user.value = JSON.parse(storedUser)
-      token.value = storedToken
-      isAuthenticated.value = true
-      return true
+    // If we're persisting token only, check for token in localStorage.
+    if (persistTokenOnly) {
+      const storedToken = localStorage.getItem('token')
+      if (storedToken) {
+        token.value = storedToken
+        // We don't automatically hydrate `user` (profile) here; components
+        // can fetch /customer/me using the token. Mark auth as authenticated
+        // so the app treats this as a logged-in session.
+        isAuthenticated.value = true
+        return true
+      }
+      return false
     }
 
     return false

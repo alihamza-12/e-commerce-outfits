@@ -1,9 +1,14 @@
 import axios from "axios";
+// Import pinia store access to read token in-memory when available
+import { useAuthStore } from '@/stores/auth'
+import { getCurrentInstance } from 'vue'
 
 const axiosInstance = axios.create({
-  // baseURL: "http://192.168.12.215:8000/api",
+  // baseURL: "http://192.168.12.45:8000/api",
+
   // Live
   baseURL: "http://13.60.188.147/api",
+
   timeout: 20000,
   headers: {
     "Content-Type": "application/json",
@@ -13,16 +18,29 @@ const axiosInstance = axios.create({
 // Request interceptor to add token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      // Prefer in-memory token from Pinia store when available.
+      // Using a direct import and calling the store works outside of setup.
+      const auth = useAuthStore()
+      const token = auth?.token || null
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+        return config
+      }
+    } catch (e) {
+      // If Pinia isn't available for some reason, fall back to localStorage.
     }
-    return config;
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
   },
   (error) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
 // Response interceptor to handle errors
 axiosInstance.interceptors.response.use(

@@ -18,101 +18,32 @@ export const useCartStore = defineStore('cart', () => {
     console.log(`[Cart Store] ${message}`, data || '')
   }
 
-  // Enhanced localStorage check
-  const isLocalStorageAvailable = () => {
-    try {
-      const test = 'test'
-      localStorage.setItem(test, test)
-      localStorage.removeItem(test)
-      return true
-    } catch (e) {
-      console.warn('LocalStorage is not available:', e)
-      return false
-    }
-  }
 
-  // Load cart items from localStorage on initialization
+  // LocalStorage helpers for fallback (guests only)
+  const CART_KEY = 'stylehub_cart_items';
   const loadCartFromStorage = () => {
     try {
-      if (!isLocalStorageAvailable()) {
-        debugLog('LocalStorage not available, using empty cart')
-        items.value = []
-        isInitialized.value = true
-        return
+      const raw = localStorage.getItem(CART_KEY);
+      if (raw) {
+        items.value = JSON.parse(raw);
+        isInitialized.value = true;
+        debugLog('Loaded cart from localStorage', items.value);
       }
-
-      const storedCart = localStorage.getItem('cart-items')
-      debugLog('Loading cart from localStorage, stored data:', storedCart)
-
-      if (storedCart) {
-        const parsedCart = JSON.parse(storedCart)
-        if (Array.isArray(parsedCart) && parsedCart.length === 0) {
-          debugLog('Loaded cart from storage is an empty array')
-        }
-        // Validate that we have an array
-        if (Array.isArray(parsedCart)) {
-          // Normalize server and local shapes to internal shape { id, title, price, image, brand, quantity }
-          const normalized = parsedCart.map((p) => {
-            // server shape: product_id, name, price, quantity, total
-            const id = p.id ?? p.product_id ?? null
-            const title = p.title ?? p.name ?? p.product_name ?? ''
-            const price = p.price ?? p.unit_price ?? 0
-            const quantity = p.quantity ?? p.qty ?? 1
-            const image = p.image ?? p.image_url ?? p.photo ?? ''
-            const brand = p.brand ?? p.category ?? ''
-            return { id, title, price, image, brand, quantity }
-          }).filter(x => x.id !== null)
-
-          items.value = normalized
-          debugLog('Successfully loaded cart from localStorage (normalized):', items.value)
-        } else {
-          debugLog('Invalid cart data in localStorage, resetting to empty array')
-          items.value = []
-        }
-      } else {
-        debugLog('No cart data found in localStorage, starting with empty cart')
-        items.value = []
-      }
-    } catch (error) {
-      console.error('Error loading cart from localStorage:', error)
-      items.value = []
-    } finally {
-      isInitialized.value = true
-      debugLog('Cart store initialization complete')
+    } catch (e) {
+      debugLog('Failed to load cart from localStorage', e);
     }
-  }
-
-  // Save cart items to localStorage with enhanced error handling
+  };
   const saveCartToStorage = () => {
     try {
-      if (!isLocalStorageAvailable()) {
-        debugLog('LocalStorage not available, cannot save cart')
-        return
-      }
-
-      // Convert reactive objects to a plain serializable structure to avoid Proxy surprises
-      const plain = items.value.map(it => ({
-        id: it.id,
-        title: it.title,
-        price: it.price,
-        image: it.image,
-        brand: it.brand,
-        quantity: it.quantity
-      }))
-      debugLog('Saving cart to localStorage (plain):', plain)
-      localStorage.setItem('cart-items', JSON.stringify(plain))
-      // read back to confirm
-      const saved = localStorage.getItem('cart-items')
-      debugLog('Cart successfully saved to localStorage (readback):', saved)
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error)
+      localStorage.setItem(CART_KEY, JSON.stringify(items.value));
+      debugLog('Saved cart to localStorage', items.value);
+    } catch (e) {
+      debugLog('Failed to save cart to localStorage', e);
     }
-  }
-
-  // Manual save method as backup
+  };
   const manualSave = () => {
-    debugLog('Manual save triggered')
-    saveCartToStorage()
+    saveCartToStorage();
+    debugLog('Manual save triggered (localStorage)');
   }
 
   // Load cart on store initialization
@@ -123,7 +54,9 @@ export const useCartStore = defineStore('cart', () => {
       debugLog('User authenticated at init, fetching remote cart to sync')
       fetchRemoteCart().catch(e => debugLog('fetchRemoteCart init failed', e))
     } else {
-      loadCartFromStorage()
+      items.value = []
+      isInitialized.value = true
+      debugLog('Guest session: cart starts empty in-memory')
     }
   } catch (e) {
     // fallback to local load
@@ -133,8 +66,7 @@ export const useCartStore = defineStore('cart', () => {
   // Watch for changes and automatically persist to localStorage
   watch(items, (newItems) => {
     if (isInitialized.value) {
-      debugLog('Cart items changed, auto-saving:', newItems)
-      saveCartToStorage()
+      debugLog('Cart items changed (in-memory):', newItems)
     }
   }, { deep: true })
 
@@ -468,12 +400,6 @@ export const useCartStore = defineStore('cart', () => {
     debugLog('Total Price:', totalPrice.value)
     debugLog('Item Count:', itemCount.value)
     debugLog('Is Initialized:', isInitialized.value)
-    debugLog('LocalStorage Available:', isLocalStorageAvailable())
-
-    if (isLocalStorageAvailable()) {
-      const stored = localStorage.getItem('cart-items')
-      debugLog('LocalStorage Content:', stored)
-    }
     debugLog('=== END DEBUG ===')
   }
 

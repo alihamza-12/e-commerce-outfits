@@ -17,6 +17,11 @@ import { Quasar, Notify, Dialog } from 'quasar'
 const app = createApp(App)
 const pinia = createPinia()
 
+// If a token is persisted in localStorage, hydrate the auth store so the
+// session survives page refreshes. We import the store after pinia is created.
+import { useAuthStore } from '@/stores/auth'
+
+
 app.use(Quasar, {
   plugins: { Notify, Dialog },
   config: {
@@ -34,5 +39,15 @@ app.use(Quasar, {
 
 app.use(pinia)
 app.use(router)
+
+// Hydrate auth state from persisted token (if any)
+try {
+  const authStore = useAuthStore(pinia)
+  if (typeof authStore.checkAuth === 'function') {
+    authStore.checkAuth()
+  }
+} catch (e) {
+  // ignore
+}
 
 app.mount('#app')
