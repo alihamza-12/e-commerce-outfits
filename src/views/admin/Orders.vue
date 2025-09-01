@@ -194,7 +194,7 @@ const showOrderModal = ref(false)
 const selectedOrderId = ref(null)
 const openInEditMode = ref(false)
 
-const statusOptions = ['all', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded', 'disputed', 'returned']
+const statusOptions = ['all', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded', 'disputed']
 const typeOptions = ['all', 'customer', 'seller']
 
 const columns = [

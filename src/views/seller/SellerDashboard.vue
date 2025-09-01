@@ -251,9 +251,6 @@
                 <th class="py-3 px-4 text-left text-xs text-slate-500">
                   Stock
                 </th>
-                <th class="py-3 px-4 text-right text-xs text-slate-500">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody>
