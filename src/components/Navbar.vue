@@ -2,7 +2,9 @@
 	<div>
 		<!-- Main Navbar -->
 		<header
-			class="bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 sticky top-0 z-50">
+			ref="headerRef"
+			class="bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50 fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+			:class="{ 'shadow-xl bg-white/95': scrolled }">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between h-16 lg:h-20">
 					<!-- Logo Section -->
@@ -554,6 +556,9 @@
 			</div>
 		</header>
 
+		<!-- Spacer to offset fixed navbar height -->
+		<div :style="{ height: headerHeight + 'px' }"></div>
+
 		<!-- Cart Sidebar -->
 		<div
 			v-if="showCartSidebar"
@@ -856,6 +861,9 @@
 	const showWishlistSidebar = ref(false);
 	const searchQuery = ref("");
 	const contactMessage = ref("");
+	const headerRef = ref(null);
+	const headerHeight = ref(0);
+	const scrolled = ref(false);
 	const $q = useQuasar();
 	const cartStore = useCartStore();
 	const authStore = useAuthStore();
@@ -890,7 +898,9 @@
 
 	onMounted(() => {
 		window.addEventListener("resize", handleResize);
+		window.addEventListener("scroll", handleScroll, { passive: true });
 		handleResize();
+		measureHeader();
 		// if logged in, fetch remote cart to sync
 		if (authStore.checkAuth()) {
 			cartStore.fetchRemoteCart && cartStore.fetchRemoteCart();
@@ -899,7 +909,20 @@
 
 	onUnmounted(() => {
 		window.removeEventListener("resize", handleResize);
+		window.removeEventListener("scroll", handleScroll);
 	});
+
+	function measureHeader() {
+		if (headerRef.value) {
+			headerHeight.value = headerRef.value.offsetHeight || 0;
+		}
+	}
+
+	function handleScroll() {
+		scrolled.value = window.scrollY > 10;
+		// in case of dynamic height changes (e.g., auth state), re-measure
+		measureHeader();
+	}
 
 	function toggleMobileMenu() {
 		showMobileMenu.value = !showMobileMenu.value;
