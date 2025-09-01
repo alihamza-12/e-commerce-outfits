@@ -516,7 +516,7 @@ function formatLocation() {
 }
 
 function goToOrders() {
-	router.push('/orders');
+	router.push('/customer/orders');
 }
 
 async function fetchProfile() {

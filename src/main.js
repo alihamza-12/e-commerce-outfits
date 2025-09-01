@@ -44,7 +44,11 @@ app.use(router)
 try {
   const authStore = useAuthStore(pinia)
   if (typeof authStore.checkAuth === 'function') {
-    authStore.checkAuth()
+    const ok = authStore.checkAuth()
+    if (ok && typeof authStore.hydrateUserProfile === 'function') {
+      // Run async but don't block mount; avatar/menu will update when resolved
+      authStore.hydrateUserProfile()
+    }
   }
 } catch (e) {
   // ignore
