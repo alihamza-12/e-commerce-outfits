@@ -279,6 +279,7 @@ class AdminService {
   async returnOrder(orderId, reason) {
     try {
       const response = await axios.patch(`/admin/orders/${orderId}/returned`, {
+        status: 'returned',
         reason,
       });
       return { success: true, data: response.data };
