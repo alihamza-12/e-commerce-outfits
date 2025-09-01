@@ -275,17 +275,17 @@
                     >{{ p.stock }}</span
                   >
                 </td>
-                <td class="py-3 px-4 text-right">
-                  <q-btn dense flat label="Edit" @click="goToProduct(p.id)" />
-                  <q-btn
+                <!-- <td class="py-3 px-4 text-right"> -->
+                  <!-- <q-btn dense flat label="Edit" @click="goToProduct(p.id)" /> -->
+                  <!-- <q-btn
                     dense
                     unelevated
                     color="positive"
                     class="ml-2"
                     label="Restock"
                     @click="openRestock(p.id)"
-                  />
-                </td>
+                  /> -->
+                <!-- </td> -->
               </tr>
             </tbody>
           </table>
