@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import authApi from '@/services/authApi'
 // Lightweight direct axios instance import for profile hydration after refresh
 import axios from '@/api/axios'
@@ -10,21 +10,16 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(null)
   const isAuthenticated = ref(false)
   const loading = ref(false)
-  // Persistence policy:
-  // User requested: do NOT keep user/profile data in storage and also remove token
-  // automatically when tab is closed. We achieve this by:
-  // 1. Using sessionStorage (isolated per tab, auto-clears on tab close)
-  // 2. Persisting ONLY the token there (no user / role stored)
-  // 3. Hydrating profile after login if needed (optional)
-  const persistTokenOnly = true
-  const STORAGE = (typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null
-
-  // One-time cleanup of any legacy localStorage auth artifacts so user isn't auto-logged from old data
-  if (typeof window !== 'undefined') {
-    try { localStorage.removeItem('token') } catch (e) { /* ignore */ }
-    try { localStorage.removeItem('user') } catch (e) { /* ignore */ }
-    try { localStorage.removeItem('role') } catch (e) { /* ignore */ }
-  }
+  // Control persistence behavior.
+  // The app will persist ONLY the JWT token to localStorage when persistTokenOnly is true.
+  // This avoids storing user profile or role in browser storage while allowing the
+  // token to survive page refreshes so the session remains active.
+  // Set to true to ONLY persist token; false to also persist serialized user + role.
+  // We switch this to false now so that after a page refresh your avatar, name
+  // and role (needed for "View All Orders") are immediately available without
+  // waiting for an API call. If you later want stricter privacy, turn it back
+  // to true once backend / hydration is fully reliable.
+  const persistTokenOnly = false
 
   // Getters
   const currentUser = computed(() => user.value)
@@ -44,11 +39,15 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = response.token
         isAuthenticated.value = true
 
-        // Persist ONLY token in sessionStorage (auto removed on tab close)
+        // Optionally persist ONLY the token to localStorage so refresh doesn't log out.
         try {
-          STORAGE && STORAGE.setItem('token', response.token)
+          localStorage.setItem('token', response.token)
+          if (!persistTokenOnly) {
+            localStorage.setItem('user', JSON.stringify(response.user))
+            if (response.user?.role) localStorage.setItem('role', response.user.role)
+          }
         } catch (e) {
-          console.warn('Failed to persist auth token to sessionStorage', e)
+          console.warn('Failed to persist auth data to localStorage', e)
         }
 
         return { success: true, user: response.user }
@@ -74,11 +73,15 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = response.token
         isAuthenticated.value = true
 
-        // Persist ONLY token in sessionStorage
+        // Optionally persist ONLY the token to localStorage so refresh doesn't log out.
         try {
-          STORAGE && STORAGE.setItem('token', response.token)
+          localStorage.setItem('token', response.token)
+          if (!persistTokenOnly) {
+            localStorage.setItem('user', JSON.stringify(response.user))
+            if (response.user?.role) localStorage.setItem('role', response.user.role)
+          }
         } catch (e) {
-          console.warn('Failed to persist auth token to sessionStorage', e)
+          console.warn('Failed to persist auth data to localStorage', e)
         }
 
         return { success: true, user: response.user }
@@ -102,8 +105,14 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       token.value = null
       isAuthenticated.value = false
-      // Remove token from sessionStorage
-      try { STORAGE && STORAGE.removeItem('token') } catch (e) { /* ignore */ }
+      // Remove only the token (and role/user if present) on logout per requirement.
+      try {
+        try { localStorage.removeItem('token') } catch (e) { }
+        try { localStorage.removeItem('role') } catch (e) { }
+        try { localStorage.removeItem('user') } catch (e) { }
+      } catch (e) {
+        console.error('Failed to remove auth keys from localStorage on logout', e)
+      }
     }
   }
 
@@ -127,7 +136,13 @@ export const useAuthStore = defineStore('auth', () => {
         const payload = res?.data?.data ?? res?.data
         if (payload && typeof payload === 'object') {
           user.value = payload
-          // Do NOT persist user data (privacy requirement)
+          // Optionally persist user if not privacy limited
+          try {
+            if (!persistTokenOnly) {
+              localStorage.setItem('user', JSON.stringify(payload))
+              if (payload.role) localStorage.setItem('role', payload.role)
+            }
+          } catch (e) { /* ignore */ }
           return { success: true, user: payload, endpoint: ep }
         }
       } catch (e) {
@@ -140,25 +155,21 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const checkAuth = () => {
-    const storedToken = STORAGE ? STORAGE.getItem('token') : null
+    const storedToken = localStorage.getItem('token')
     if (storedToken) {
       token.value = storedToken
+      if (!persistTokenOnly) {
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) {
+          try { user.value = JSON.parse(storedUser) } catch (e) { /* ignore */ }
+        }
+      }
       isAuthenticated.value = true
       // Fire & forget hydration (keeps UI avatar/menu after refresh)
       hydrateUserProfile()
       return true
     }
     return false
-  }
-
-  // Defensive: on tab close (beforeunload) ensure token removed (sessionStorage auto handles
-  // this, but we add an explicit clear for robustness or if environment swaps storage)
-  if (typeof window !== 'undefined') {
-    const clearOnUnload = () => {
-      try { STORAGE && STORAGE.removeItem('token') } catch (e) { /* ignore */ }
-    }
-    window.addEventListener('beforeunload', clearOnUnload)
-    onUnmounted(() => window.removeEventListener('beforeunload', clearOnUnload))
   }
 
   const getDashboardRoute = (role) => {
