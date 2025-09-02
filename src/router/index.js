@@ -65,7 +65,7 @@ const routes = [
       },
       {
         path: 'customer-orders',
-        name: 'CustomerOrders',
+        name: 'AdminCustomerOrders',
         component: () => import('@/views/admin/CustomerOrders.vue'),
       },
       {
